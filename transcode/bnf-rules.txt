@@ -11,6 +11,17 @@ always_keyword
 	  | ALWAYSLATCH 
 	  | ALWAYSFF 
 
+anonymous_program 
+	::= PROGRAM SEMI { anonymous_program_item } ENDPROGRAM 
+
+anonymous_program_item 
+	::= task_declaration 
+	  | function_declaration 
+	  | class_declaration 
+	  | covergroup_declaration 
+	  | class_constructor_declaration 
+	  | SEMI 
+
 ansi_port_declaration 
 	::= [ net_port_header ] port_identifier { unpacked_dimension } [ ASSIGNOP constant_expression ] 
 	  | [ interface_port_header ] port_identifier { unpacked_dimension } [ ASSIGNOP constant_expression ] 
@@ -98,6 +109,10 @@ associative_dimension
 
 assume_property_statement 
 	::= ASSUME PROPERTY LPAREN property_spec RPAREN action_block 
+
+ast 
+	::= library_text 
+	  | source_text 
 
 attr_name 
 	::= identifier 
@@ -275,6 +290,12 @@ casting_type
 	  | STRING 
 	  | CONST 
 
+cell_clause 
+	::= CELL [ library_identifier DOT ] cell_identifier 
+
+cell_identifier 
+	::= identifier 
+
 charge_strength 
 	::= SMALL 
 	  | MEDIUM 
@@ -430,6 +451,12 @@ cmos_switchtype
 	::= CMOS 
 	  | RCMOS 
 
+combinational_body 
+	::= TABLE { combinational_entry } ENDTABLE 
+
+combinational_entry 
+	::= level_input_list COLON output_symbol SEMI 
+
 concatenation 
 	::= LBRACE expression { COMMA expression } RBRACE 
 
@@ -459,6 +486,19 @@ conditional_generate_construct
 
 conditional_statement 
 	::= [ unique_priority ] IF LPAREN cond_predicate RPAREN statement_or_null { ELSE IF LPAREN cond_predicate RPAREN statement_or_null } [ ELSE statement_or_null ] 
+
+config_declaration 
+	::= CONFIG config_identifier SEMI { local_parameter_declaration SEMI } design_statement { config_rule_statement } ENDCONFIG [ COLON config_identifier ] 
+
+config_identifier 
+	::= identifier 
+
+config_rule_statement 
+	::= default_clause liblist_clause SEMI 
+	  | inst_clause liblist_clause SEMI 
+	  | inst_clause use_clause SEMI 
+	  | cell_clause liblist_clause SEMI 
+	  | cell_clause use_clause SEMI 
 
 consecutive_repetition 
 	::= LBRACKET STAR const_or_range_expression RBRACKET 
@@ -655,6 +695,9 @@ cross_item
 cross_set_expression 
 	::= covergroup_expression 
 
+current_state 
+	::= level_symbol 
+
 cycle_delay 
 	::= DOUBLEHASH integral_number 
 	  | DOUBLEHASH identifier 
@@ -710,6 +753,9 @@ decimal_number
 	  | [ size ] decimal_base unsigned_number 
 	  | [ size ] decimal_base 
 	  | [ size ] decimal_base 
+
+default_clause 
+	::= DEFAULT 
 
 default_skew 
 	::= INPUT clocking_skew 
@@ -769,6 +815,19 @@ delayed_data
 delayed_reference 
 	::= terminal_identifier [ LBRACKET constant_mintypmax_expression RBRACKET ] 
 
+description 
+	::= module_declaration 
+	  | udp_declaration 
+	  | interface_declaration 
+	  | program_declaration 
+	  | package_declaration 
+	  | { attribute_instance } package_item 
+	  | { attribute_instance } bind_directive 
+	  | config_declaration 
+
+design_statement 
+	::= DESIGN { [ library_identifier DOT ] cell_identifier } SEMI 
+
 disable_statement 
 	::= DISABLE hierarchical_task_identifier SEMI 
 	  | DISABLE hierarchical_block_identifier SEMI 
@@ -827,9 +886,20 @@ edge_identifier
 	  | NEGEDGE 
 	  | EDGE 
 
+edge_indicator 
+	::= LPAREN level_symbol level_symbol RPAREN 
+	  | edge_symbol 
+
+edge_input_list 
+	::= { level_symbol } edge_indicator { level_symbol } 
+
 edge_sensitive_path_declaration 
 	::= parallel_edge_sensitive_path_description ASSIGNOP path_delay_value 
 	  | full_edge_sensitive_path_description ASSIGNOP path_delay_value 
+
+edge_symbol 
+	::= identifier 
+	  | STAR 
 
 elaboration_system_task 
 	::= [ LPAREN finish_number [ COMMA list_of_arguments ] RPAREN ] SEMI 
@@ -914,6 +984,9 @@ extern_constraint_declaration
 extern_tf_declaration 
 	::= method_prototype SEMI 
 	  | task_prototype SEMI 
+
+file_path_spec 
+	::= identifier 
 
 final_construct 
 	::= FINAL function_statement 
@@ -1104,12 +1177,18 @@ inc_or_dec_operator
 	::= INCREMENT 
 	  | DECREMENT 
 
+include_statement 
+	::= INCLUDE file_path_spec SEMI 
+
 index_variable_identifier 
 	::= identifier 
 
 indexed_range 
 	::= expression PLUS COLON constant_expression 
 	  | expression MINUS COLON constant_expression 
+
+init_val 
+	::= number 
 
 initial_construct 
 	::= INITIAL statement_or_null 
@@ -1140,6 +1219,12 @@ input_terminal
 
 inside_expression 
 	::= expression INSIDE LBRACKET open_range_list RBRACKET 
+
+inst_clause 
+	::= INSTANCE inst_name 
+
+inst_name 
+	::= topmodule_identifier { instance_identifier DOT } 
 
 instance_identifier 
 	::= identifier 
@@ -1247,6 +1332,31 @@ let_port_item
 let_port_list 
 	::= let_port_item { COMMA let_port_item } 
 
+level_input_list 
+	::= { level_symbol } 
+
+level_symbol 
+	::= number 
+	  | identifier 
+
+liblist_clause 
+	::= LIBLIST { library_identifier } 
+
+library_declaration 
+	::= LIBRARY library_identifier file_path_spec { COMMA file_path_spec } [ MINUS INCDIR file_path_spec { COMMA file_path_spec } ] SEMI 
+
+library_description 
+	::= library_declaration 
+	  | include_statement 
+	  | config_declaration 
+	  | SEMI 
+
+library_identifier 
+	::= identifier 
+
+library_text 
+	::= { library_description } 
+
 lifetime 
 	::= STATIC 
 	  | AUTOMATIC 
@@ -1324,6 +1434,9 @@ list_of_tf_variable_identifiers
 
 list_of_type_assignments 
 	::= type_assignment { COMMA type_assignment } 
+
+list_of_udp_port_identifiers 
+	::= port_identifier { COMMA port_identifier } 
 
 list_of_variable_assignments 
 	::= variable_assignment { COMMA variable_assignment } 
@@ -1597,6 +1710,10 @@ net_type_declaration
 net_type_identifier 
 	::= identifier 
 
+next_state 
+	::= output_symbol 
+	  | MINUS 
+
 nochange_timing_check 
 	::= TFNOCHANGE LPAREN reference_event COMMA data_event COMMA start_edge_offset COMMA end_edge_offset [ COMMA [ notifier ] ] RPAREN SEMI 
 
@@ -1684,6 +1801,9 @@ output_identifier
 output_port_identifier 
 	::= identifier 
 
+output_symbol 
+	::= unsigned_number 
+
 output_terminal 
 	::= net_lvalue 
 
@@ -1713,6 +1833,13 @@ overload_proto_formals
 p_control_terminal 
 	::= expression 
 
+package_declaration 
+	::= { attribute_instance } PACKAGE [ lifetime ] package_identifier SEMI [ timeunits_declaration ] { { attribute_instance } package_item } ENDPACKAGE [ COLON package_identifier ] 
+
+package_export_declaration 
+	::= EXPORT package_import_item { COMMA package_import_item } 
+	  | STAR NAMEQUAL STAR SEMI 
+
 package_identifier 
 	::= identifier 
 
@@ -1722,6 +1849,12 @@ package_import_declaration
 package_import_item 
 	::= package_identifier NAMEQUAL identifier 
 	  | STAR 
+
+package_item 
+	::= package_or_generate_item_declaration 
+	  | anonymous_program 
+	  | package_export_declaration 
+	  | timeunits_declaration 
 
 package_or_generate_item_declaration 
 	::= net_declaration 
@@ -2194,6 +2327,10 @@ select_expression
 seq_block 
 	::= BEGIN [ COLON block_identifier ] { block_item_declaration } { statement_or_null } END [ COLON block_identifier ] 
 
+seq_input_list 
+	::= level_input_list 
+	  | edge_input_list 
+
 sequence_abbrev 
 	::= consecutive_repetition 
 
@@ -2250,6 +2387,12 @@ sequence_port_item
 
 sequence_port_list 
 	::= sequence_port_item { COMMA sequence_port_item } 
+
+sequential_body 
+	::= [ udp_initial_statement ] TABLE { sequential_entry } ENDTABLE 
+
+sequential_entry 
+	::= seq_input_list COLON current_state COLON next_state SEMI 
 
 set_covergroup_expression 
 	::= covergroup_expression 
@@ -2311,6 +2454,9 @@ slice_size
 
 solve_before_list 
 	::= constraint_primary { COMMA constraint_primary } 
+
+source_text 
+	::= [ timeunits_declaration ] { description } 
 
 specify_block 
 	::= SPECIFY { specify_item } SPECIFY 
@@ -2552,6 +2698,9 @@ timing_check_event_control
 timing_check_limit 
 	::= expression 
 
+topmodule_identifier 
+	::= identifier 
+
 trans_item 
 	::= covergroup_range_list 
 
@@ -2610,14 +2759,55 @@ tz_path_delay_expression
 tzx_path_delay_expression 
 	::= path_delay_expression 
 
+udp_ansi_declaration 
+	::= { attribute_instance } PRIMITIVE udp_identifier LPAREN udp_declaration_port_list RPAREN SEMI 
+
+udp_body 
+	::= combinational_body 
+	  | sequential_body 
+
+udp_declaration 
+	::= udp_nonansi_declaration { udp_port_declaration } udp_body ENDPRIMITIVE [ COLON udp_identifier ] 
+	  | udp_ansi_declaration udp_body ENDPRIMITIVE [ COLON udp_identifier ] 
+	  | EXTERN udp_nonansi_declaration 
+	  | EXTERN udp_ansi_declaration 
+	  | { attribute_instance } PRIMITIVE udp_identifier LPAREN DOT STAR RPAREN SEMI { udp_port_declaration } udp_body ENDPRIMITIVE [ COLON udp_identifier ] 
+
+udp_declaration_port_list 
+	::= udp_output_declaration COMMA udp_input_declaration { COMMA udp_input_declaration } 
+
 udp_identifier 
 	::= identifier 
+
+udp_initial_statement 
+	::= INITIAL output_port_identifier ASSIGNOP init_val SEMI 
+
+udp_input_declaration 
+	::= { attribute_instance } INPUT list_of_udp_port_identifiers 
 
 udp_instance 
 	::= [ name_of_instance ] LPAREN output_terminal COMMA input_terminal { COMMA input_terminal } RPAREN 
 
 udp_instantiation 
 	::= udp_identifier [ drive_strength ] [ delay2 ] udp_instance { COMMA udp_instance } SEMI 
+
+udp_nonansi_declaration 
+	::= { attribute_instance } PRIMITIVE udp_identifier LPAREN udp_port_list RPAREN SEMI 
+
+udp_output_declaration 
+	::= { attribute_instance } OUTPUT port_identifier 
+	  | { attribute_instance } OUTPUT REG port_identifier [ ASSIGNOP constant_expression ] 
+
+udp_port_declaration 
+	::= udp_output_declaration SEMI 
+	  | udp_input_declaration SEMI 
+	  | udp_reg_declaration SEMI 
+
+udp_port_list 
+	::= output_port_identifier COMMA input_port_identifier { COMMA input_port_identifier } 
+
+udp_reg_declaration 
+	::= { attribute_instance } INPUT variable_identifier 
 
 unary_module_path_operator 
 	::= NOTOP 
@@ -2658,6 +2848,11 @@ unpacked_dimension
 
 unsized_dimension 
 	::= LBRACKET RBRACKET 
+
+use_clause 
+	::= USE [ library_identifier DOT ] cell_identifier [ COLON CONFIG ] 
+	  | named_parameter_assignment { COMMA named_parameter_assignment } [ COLON CONFIG ] 
+	  | USE [ library_identifier DOT ] cell_identifier named_parameter_assignment { COMMA named_parameter_assignment } [ COLON CONFIG ] 
 
 value_range 
 	::= expression 
