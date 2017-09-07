@@ -1,0 +1,2717 @@
+action_block 
+	::= [ statement ] ELSE statement_or_null 
+	  | statement_or_null 
+
+always_construct 
+	::= always_keyword statement 
+
+always_keyword 
+	::= ALWAYS 
+	  | ALWAYSCOMB 
+	  | ALWAYSLATCH 
+	  | ALWAYSFF 
+
+ansi_port_declaration 
+	::= [ net_port_header ] port_identifier { unpacked_dimension } [ ASSIGNOP constant_expression ] 
+	  | [ interface_port_header ] port_identifier { unpacked_dimension } [ ASSIGNOP constant_expression ] 
+	  | [ variable_port_header ] port_identifier { variable_dimension } [ ASSIGNOP constant_expression ] 
+	  | [ port_direction ] DOT port_identifier LPAREN [ expression ] RPAREN 
+
+array_manipulation_call 
+	::= array_method_name { attribute_instance } [ LPAREN list_of_arguments RPAREN ] [ WITH LPAREN expression RPAREN ] 
+
+array_method_name 
+	::= method_identifier 
+	  | UNIQUE 
+	  | AND 
+	  | OR 
+	  | XOR 
+
+array_pattern_key 
+	::= constant_expression 
+	  | assignment_pattern_key 
+
+array_range_expression 
+	::= expression COLON expression 
+	  | expression PLUS COLON expression 
+	  | expression MINUS COLON expression 
+	  | expression 
+
+assert_property_statement 
+	::= ASSERT PROPERTY LPAREN property_spec RPAREN action_block 
+
+assertion_item 
+	::= concurrent_assertion_item 
+	  | deferred_immediate_assertion_item 
+
+assertion_item_declaration 
+	::= property_declaration 
+	  | sequence_declaration 
+	  | let_declaration 
+
+assertion_variable_declaration 
+	::= var_data_type list_of_variable_decl_assignments SEMI 
+
+assignment_operator 
+	::= ASSIGNOP 
+	  | ASSPLUS 
+	  | ASSMINUS 
+	  | ASSSTAR 
+	  | ASSSLASH 
+	  | ASSPERCENT 
+	  | AMP 
+	  | ASSPIPE 
+	  | ASSCARET 
+	  | ASSSHIFTL 
+	  | ASSSHIFTR 
+	  | ASSSHIFTLL 
+	  | ASSSHIFTRR 
+
+assignment_pattern 
+	::= APOS LBRACE expression { COMMA expression } RBRACE 
+	  | APOS LBRACE structure_pattern_key COLON expression RBRACE { COMMA LBRACE structure_pattern_key COLON expression RBRACE } 
+	  | APOS LBRACE array_pattern_key COLON expression RBRACE { COMMA LBRACE array_pattern_key COLON expression RBRACE } 
+	  | APOS LBRACE constant_expression LBRACE expression { COMMA expression } RBRACE RBRACE 
+
+assignment_pattern_expression 
+	::= [ assignment_pattern_expression_type ] assignment_pattern 
+
+assignment_pattern_expression_type 
+	::= ps_type_identifier 
+	  | ps_parameter_identifier 
+	  | integer_atom_type 
+	  | type_reference 
+
+assignment_pattern_key 
+	::= simple_type 
+	  | DEFAULT 
+
+assignment_pattern_net_lvalue 
+	::= APOS LBRACKET net_lvalue { COMMA net_lvalue } RBRACKET 
+
+assignment_pattern_variable_lvalue 
+	::= APOS LBRACKET variable_lvalue { COMMA variable_lvalue } RBRACKET 
+
+associative_dimension 
+	::= LBRACKET data_type 
+	  | STAR RBRACKET 
+
+assume_property_statement 
+	::= ASSUME PROPERTY LPAREN property_spec RPAREN action_block 
+
+attr_name 
+	::= identifier 
+
+attr_spec 
+	::= attr_name [ ASSIGNOP constant_expression ] 
+
+attribute_instance 
+	::= LPAREN STAR attr_spec { COMMA attr_spec } STAR RPAREN 
+
+bin_identifier 
+	::= identifier 
+
+binary_module_path_operator 
+	::= EQ 
+	  | NOTEQ 
+	  | ANDOP 
+	  | OROP 
+	  | AMP 
+	  | PIPE 
+	  | CARET TILDE 
+	  | TILDE CARET 
+	  | CARET 
+
+binary_number 
+	::= [ size ] binary_base binary_value 
+
+binary_operator 
+	::= PLUS 
+	  | MINUS 
+	  | STAR 
+	  | SLASH 
+	  | PERCENT 
+	  | EQ 
+	  | NOTEQ 
+	  | EQUIVALENT 
+	  | NOTEQUIVALENT 
+	  | ANDOP 
+	  | OROP 
+	  | AMP 
+	  | PIPE 
+	  | CARET TILDE 
+	  | TILDE CARET 
+	  | CARET 
+
+bind_directive 
+	::= bind_target_scope [ bind_target_instance_list ] bind_instantiation SEMI 
+	  | bind_target_instance bind_instantiation SEMI 
+
+bind_instantiation 
+	::= program_instantiation 
+	  | module_instantiation 
+	  | interface_instantiation 
+	  | checker_instantiation 
+
+bind_target_instance 
+	::= hierarchical_identifier constant_bit_select 
+
+bind_target_instance_list 
+	::= bind_target_instance { COMMA bind_target_instance } 
+
+bind_target_scope 
+	::= module_identifier 
+	  | interface_identifier 
+
+bins_expression 
+	::= variable_identifier 
+	  | cover_point_identifier [ DOT bin_identifier ] 
+
+bins_keyword 
+	::= BINS 
+	  | ILLEGALBINS 
+	  | IGNOREBINS 
+
+bins_or_empty 
+	::= LBRACE { attribute_instance } { bins_or_options SEMI } RBRACE 
+	  | SEMI 
+
+bins_or_options 
+	::= coverage_option 
+	  | [ WILDCARD ] bins_keyword bin_identifier [ LBRACKET [ covergroup_expression ] RBRACKET ] ASSIGNOP LBRACE covergroup_range_list RBRACE [ WITH LPAREN with_covergroup_expression RPAREN ] [ IFF LPAREN expression RPAREN ] 
+	  | [ WILDCARD ] bins_keyword bin_identifier [ LBRACKET [ covergroup_expression ] RBRACKET ] ASSIGNOP cover_point_identifier [ WITH LPAREN with_covergroup_expression RPAREN ] [ IFF LPAREN expression RPAREN ] 
+	  | [ WILDCARD ] bins_keyword bin_identifier [ LBRACKET [ covergroup_expression ] RBRACKET ] ASSIGNOP set_covergroup_expression [ IFF LPAREN expression RPAREN ] 
+	  | [ WILDCARD ] bins_keyword bin_identifier [ LBRACKET RBRACKET ] ASSIGNOP trans_list [ IFF LPAREN expression RPAREN ] 
+	  | bins_keyword bin_identifier [ LBRACKET [ covergroup_expression ] RBRACKET ] ASSIGNOP DEFAULT [ IFF LPAREN expression RPAREN ] 
+	  | bins_keyword bin_identifier ASSIGNOP DEFAULT SEQUENCE [ IFF LPAREN expression RPAREN ] 
+
+bins_selection 
+	::= bins_keyword bin_identifier ASSIGNOP select_expression [ IFF LPAREN expression RPAREN ] 
+
+bins_selection_or_option 
+	::= { attribute_instance } coverage_option 
+	  | { attribute_instance } bins_selection 
+
+bit_select 
+	::= { LBRACKET expression RBRACKET } 
+
+block_event_expression 
+	::= block_event_expression OR block_event_expression 
+	  | BEGIN hierarchical_btf_identifier 
+	  | END hierarchical_btf_identifier 
+
+block_identifier 
+	::= identifier 
+
+block_item_declaration 
+	::= { attribute_instance } data_declaration 
+	  | { attribute_instance } local_parameter_declaration SEMI 
+	  | { attribute_instance } parameter_declaration SEMI 
+	  | { attribute_instance } overload_declaration 
+	  | { attribute_instance } let_declaration 
+
+blocking_assignment 
+	::= variable_lvalue ASSIGNOP delay_or_event_control expression 
+	  | nonrange_variable_lvalue ASSIGNOP dynamic_array_new 
+	  | implicit_class_handle DOT 
+	  | class_scope 
+	  | package_scope hierarchical_variable_identifier select ASSIGNOP class_new 
+	  | operator_assignment 
+
+boolean_abbrev 
+	::= consecutive_repetition 
+	  | non_consecutive_repetition 
+	  | goto_repetition 
+
+built_in_method_call 
+	::= array_manipulation_call 
+	  | randomize_call 
+
+c_identifier 
+	::= identifier 
+
+case_expression 
+	::= expression 
+
+case_generate_construct 
+	::= CASE LPAREN constant_expression RPAREN { case_generate_item } ENDCASE 
+
+case_generate_item 
+	::= constant_expression { COMMA constant_expression } COLON 
+	  | DEFAULT [ COLON ] generate_block 
+
+case_inside_item 
+	::= open_range_list statement_or_null 
+	  | DEFAULT [ COLON ] statement_or_null 
+
+case_item 
+	::= case_item_expression { COMMA case_item_expression } COLON statement_or_null 
+	  | DEFAULT [ COLON ] statement_or_null 
+
+case_item_expression 
+	::= expression 
+
+case_keyword 
+	::= CASE 
+	  | CASEZ 
+	  | CASEX 
+
+case_pattern_item 
+	::= pattern [ expression ] statement_or_null 
+	  | DEFAULT [ COLON ] statement_or_null 
+
+case_statement 
+	::= [ unique_priority ] case_keyword LPAREN case_expression RPAREN { case_item } ENDCASE 
+	  | [ unique_priority ] case_keyword LPAREN case_expression RPAREN MATCHES { case_pattern_item } ENDCASE 
+	  | [ unique_priority ] CASE LPAREN case_expression RPAREN INSIDE { case_inside_item } ENDCASE 
+
+cast 
+	::= casting_type APOS LPAREN expression RPAREN 
+
+casting_type 
+	::= simple_type 
+	  | constant_primary 
+	  | signing 
+	  | STRING 
+	  | CONST 
+
+charge_strength 
+	::= SMALL 
+	  | MEDIUM 
+	  | LARGE 
+
+checker_declaration 
+	::= CHECKER checker_identifier [ LPAREN [ checker_port_list ] RPAREN ] SEMI { { attribute_instance } checker_or_generate_item } ENDCHECKER [ COLON checker_identifier ] 
+
+checker_generate_item 
+	::= loop_generate_construct 
+	  | conditional_generate_construct 
+	  | generate_region 
+	  | elaboration_system_task 
+
+checker_identifier 
+	::= identifier 
+
+checker_instantiation 
+	::= ps_checker_identifier name_of_instance LPAREN [ list_of_checker_port_connections ] RPAREN SEMI 
+
+checker_or_generate_item 
+	::= checker_or_generate_item_declaration 
+	  | initial_construct 
+	  | always_construct 
+	  | final_construct 
+	  | assertion_item 
+	  | continuous_assign 
+	  | checker_generate_item 
+
+checker_or_generate_item_declaration 
+	::= [ RAND ] data_declaration 
+	  | function_declaration 
+	  | checker_declaration 
+	  | assertion_item_declaration 
+	  | covergroup_declaration 
+	  | overload_declaration 
+	  | genvar_declaration 
+	  | clocking_declaration 
+	  | DEFAULT CLOCKING clocking_identifier SEMI 
+	  | DEFAULT DEFAULT IFF expression_or_dist SEMI 
+
+checker_port_direction 
+	::= INPUT 
+	  | OUTPUT 
+
+checker_port_item 
+	::= { attribute_instance } [ checker_port_direction ] property_formal_type formal_port_identifier { variable_dimension } [ ASSIGNOP property_actual_arg ] 
+
+checker_port_list 
+	::= checker_port_item { COMMA checker_port_item } 
+
+class_constraint 
+	::= contraint_prototype 
+	  | constraint_declaration 
+
+class_constructor_declaration 
+	::= FUNCTION [ class_scope ] NEW [ LPAREN [ tf_port_list ] RPAREN ] SEMI { block_item_declaration } [ SUPER DOT NEW [ LPAREN list_of_arguments RPAREN ] SEMI ] { function_statement_or_null } ENDFUNCTION [ COLON NEW ] 
+
+class_constructor_prototype 
+	::= FUNCTION NEW [ LPAREN [ tf_port_list ] RPAREN ] SEMI 
+
+class_declaration 
+	::= [ VIRTUAL ] CLASS [ lifetime ] class_identifier [ parameter_port_list ] [ EXTENDS class_type [ LPAREN list_of_arguments RPAREN ] ] [ IMPLEMENTS interface_class_type { COMMA interface_class_type } ] SEMI { class_item } ENDCLASS [ COLON class_identifier ] 
+
+class_identifier 
+	::= identifier 
+
+class_item 
+	::= { attribute_instance } class_property 
+	  | { attribute_instance } class_method 
+	  | { attribute_instance } class_constraint 
+	  | { attribute_instance } class_declaration 
+	  | { attribute_instance } covergroup_declaration 
+	  | local_parameter_declaration SEMI 
+	  | parameter_declaration SEMI 
+	  | SEMI 
+
+class_item_qualifier 
+	::= STATIC 
+	  | PROTECTED 
+	  | LOCAL 
+
+class_method 
+	::= { method_qualifier } task_declaration 
+	  | { method_qualifier } function_declaration 
+	  | PURE VIRTUAL { class_item_qualifier } method_prototype SEMI 
+	  | EXTERN { method_qualifier } method_prototype SEMI 
+	  | { method_qualifier } class_constructor_declaration 
+	  | EXTERN { method_qualifier } class_constructor_prototype 
+
+class_new 
+	::= [ class_scope ] NEW [ LPAREN list_of_arguments RPAREN ] 
+	  | NEW expression 
+
+class_property 
+	::= { property_qualifier } data_declaration 
+	  | CONST { class_item_qualifier } data_type const_identifier [ ASSIGNOP constant_expression ] SEMI 
+
+class_qualifier 
+	::= [ LOCAL NAMEQUAL ] [ implicit_class_handle DOT 
+	  | class_scope ] 
+
+class_scope 
+	::= class_type NAMEQUAL 
+
+class_type 
+	::= ps_class_identifier [ parameter_value_assignment ] { NAMEQUAL class_identifier [ parameter_value_assignment ] } 
+
+class_variable_identifier 
+	::= variable_identifier 
+
+clocking_decl_assign 
+	::= signal_identifier [ ASSIGNOP expression ] 
+
+clocking_declaration 
+	::= [ DEFAULT ] CLOCKING [ clocking_identifier ] clocking_event SEMI { clocking_item } [ COLON clocking_identifier ] 
+
+clocking_direction 
+	::= INPUT [ clocking_skew ] 
+	  | OUTPUT [ clocking_skew ] 
+	  | INPUT [ clocking_skew ] OUTPUT [ clocking_skew ] 
+	  | INOUT 
+
+clocking_drive 
+	::= clockvar_expression LTEQ [ cycle_delay ] expression 
+
+clocking_event 
+	::= AT identifier 
+	  | AT LPAREN event_expression RPAREN 
+
+clocking_identifier 
+	::= identifier 
+
+clocking_item 
+	::= DEFAULT default_skew SEMI 
+	  | clocking_direction list_of_clocking_decl_assign SEMI 
+	  | { attribute_instance } assertion_item_declaration 
+
+clocking_skew 
+	::= edge_identifier [ delay_control ] 
+	  | delay_control 
+
+clockvar 
+	::= hierarchical_identifier 
+
+clockvar_expression 
+	::= clockvar select 
+
+cmos_switch_instance 
+	::= [ name_of_instance ] LPAREN output_terminal COMMA input_terminal COMMA n_control_terminal COMMA p_control_terminal RPAREN 
+
+cmos_switchtype 
+	::= CMOS 
+	  | RCMOS 
+
+concatenation 
+	::= LBRACE expression { COMMA expression } RBRACE 
+
+concurrent_assertion_item 
+	::= [ block_identifier COLON ] concurrent_assertion_statement 
+	  | checker_instantiation 
+
+concurrent_assertion_statement 
+	::= assert_property_statement 
+	  | assume_property_statement 
+	  | cover_property_statement 
+	  | cover_sequence_statement 
+	  | restrict_property_statement 
+
+cond_pattern 
+	::= expression MATCHES pattern 
+
+cond_predicate 
+	::= expression_or_cond_pattern { TRIPLEAMP expression_or_cond_pattern } 
+
+conditional_expression 
+	::= cond_predicate QUESTION { attribute_instance } expression COLON expression 
+
+conditional_generate_construct 
+	::= if_generate_construct 
+	  | case_generate_construct 
+
+conditional_statement 
+	::= [ unique_priority ] IF LPAREN cond_predicate RPAREN statement_or_null { ELSE IF LPAREN cond_predicate RPAREN statement_or_null } [ ELSE statement_or_null ] 
+
+consecutive_repetition 
+	::= LBRACKET STAR const_or_range_expression RBRACKET 
+	  | LBRACKET STAR RBRACKET 
+	  | LBRACKET PLUS RBRACKET 
+
+const_identifier 
+	::= identifier 
+
+const_or_range_expression 
+	::= constant_expression 
+	  | cycle_delay_const_range_expression 
+
+constan_let_expression 
+	::= let_expression 
+
+constant_assignment_pattern_expression 
+	::= assignment_pattern_expression 
+
+constant_bit_select 
+	::= { LBRACKET constant_expression RBRACKET } 
+
+constant_cast 
+	::= casting_type APOS LPAREN constant_expression RPAREN 
+
+constant_concatenation 
+	::= LBRACE constant_expression { COMMA constant_expression } RBRACE 
+
+constant_expression 
+	::= constant_primary 
+	  | unary_operator { attribute_instance } constant_primary 
+	  | constant_expression binary_operator { attribute_instance } constant_expression 
+	  | constant_expression QUESTION { attribute_instance } constant_expression COLON constant_expression 
+
+constant_function_call 
+	::= function_subroutine_call 
+
+constant_indexed_range 
+	::= constant_expression PLUS COLON constant_expression 
+	  | constant_expression MINUS COLON constant_expression 
+
+constant_mintypmax_expression 
+	::= constant_expression COLON constant_expression COLON constant_expression 
+	  | constant_expression 
+
+constant_multiple_concatenation 
+	::= LBRACE constant_expression constant_concatenation RBRACE 
+
+constant_param_expression 
+	::= constant_mintypmax_expression 
+	  | data_type 
+	  | DOLLAR 
+
+constant_part_select_range 
+	::= constant_range 
+	  | constant_indexed_range 
+
+constant_primary 
+	::= primary_literal 
+	  | ps_parameter_identifier constant_select 
+	  | specparam_identifier [ constant_range_expression ] 
+	  | genvar_identifier 
+	  | formal_port_identifier constant_select 
+	  | [ package_scope 
+	  | class_scope ] enum_identifier 
+	  | constant_concatenation [ LBRACKET constant_range_expression RBRACKET ] 
+	  | constant_multiple_concatenation [ LBRACKET constant_range_expression RBRACKET ] 
+	  | constant_function_call 
+	  | constan_let_expression 
+	  | LPAREN constant_mintypmax_expression RPAREN 
+	  | constant_cast 
+	  | constant_assignment_pattern_expression 
+	  | type_reference 
+
+constant_range 
+	::= constant_expression COLON constant_expression 
+
+constant_range_expression 
+	::= constant_expression 
+	  | constant_part_select_range 
+
+constant_select 
+	::= [ { DOT member_identifier constant_bit_select } DOT member_identifier ] constant_bit_select [ LBRACKET constant_part_select_range RBRACKET ] 
+
+constraint_block 
+	::= LBRACE { constraint_block_item } RBRACE 
+
+constraint_block_item 
+	::= SOLVE solve_before_list SOLVE solve_before_list SEMI 
+	  | constraint_expression 
+
+constraint_declaration 
+	::= [ STATIC ] CONSTRAINT contraint_identifier constraint_block 
+
+constraint_expression 
+	::= [ SOFT ] expression_or_dist SEMI 
+	  | uniqueness_constraint SEMI 
+	  | expression ARROW constraint_set 
+	  | IF LPAREN expression RPAREN constraint_set [ ELSE constraint_set ] 
+	  | FOREACH LPAREN ps_or_hierarchical_array_identifier [ loop_variables ] RPAREN constraint_set 
+	  | DISABLE SOFT constraint_primary SEMI 
+
+constraint_primary 
+	::= [ implicit_class_handle DOT 
+	  | class_scope ] hierarchical_identifier select 
+
+constraint_prototype_qualifier 
+	::= EXTERN 
+	  | PURE 
+
+constraint_set 
+	::= constraint_expression 
+	  | LBRACE { constraint_expression } RBRACE 
+
+continuous_assign 
+	::= ASSIGN [ drive_strength ] [ delay3 ] list_of_net_assignments SEMI 
+	  | ASSIGN [ delay_control ] list_of_variable_assignments SEMI 
+
+contraint_identifier 
+	::= identifier 
+
+contraint_prototype 
+	::= [ constraint_prototype_qualifier ] [ STATIC ] CONSTRAINT contraint_identifier SEMI 
+
+controlled_reference_event 
+	::= controlled_timing_check_event 
+
+controlled_timing_check_event 
+	::= timing_check_event_control specify_terminal_descriptor [ TRIPLEAMP timing_check_condition ] 
+
+cover_cross 
+	::= [ cross_identifier COLON ] CROSS list_of_cross_items [ IFF LPAREN expression RPAREN ] cross_body 
+
+cover_point 
+	::= [ [ data_type_or_implicit ] cover_point_identifier COLON ] COVERPOINT expression [ IFF LPAREN expression RPAREN ] bins_or_empty 
+
+cover_point_identifier 
+	::= identifier 
+
+cover_property_statement 
+	::= COVER PROPERTY LPAREN property_spec RPAREN statement_or_null 
+
+cover_sequence_statement 
+	::= COVER SEQUENCE LPAREN [ clocking_event ] [ DISABLE IFF LPAREN expression_or_dist RPAREN ] sequence_expr RPAREN statement_or_null 
+
+coverage_event 
+	::= clocking_event 
+	  | WITH FUNCTION SAMPLE LPAREN [ tf_port_list ] RPAREN 
+	  | DOUBLEAT LPAREN block_event_expression RPAREN 
+
+coverage_option 
+	::= OPTION DOT member_identifier ASSIGNOP expression 
+	  | TYPEOPTION DOT member_identifier ASSIGNOP expression 
+
+coverage_spec 
+	::= cover_point 
+	  | cover_cross 
+
+coverage_spec_or_option 
+	::= { attribute_instance } coverage_spec 
+	  | { attribute_instance } coverage_option SEMI 
+
+covergroup_declaration 
+	::= COVERGROUP covergroup_identifier [ LPAREN [ tf_port_list ] RPAREN ] [ coverage_event ] SEMI { coverage_spec_or_option } ENDGROUP [ COLON covergroup_identifier ] 
+
+covergroup_expression 
+	::= expression 
+
+covergroup_identifier 
+	::= identifier 
+
+covergroup_range_list 
+	::= covergroup_value_range { COMMA covergroup_value_range } 
+
+covergroup_value_range 
+	::= covergroup_expression 
+	  | LBRACKET covergroup_expression COLON covergroup_expression RBRACKET 
+
+cross_body 
+	::= LBRACE cross_body_item { SEMI cross_body_item } RBRACE 
+	  | SEMI 
+
+cross_body_item 
+	::= function_declaration 
+	  | bins_selection_or_option SEMI 
+
+cross_identifier 
+	::= identifier 
+
+cross_item 
+	::= cover_point_identifier 
+	  | variable_identifier 
+
+cross_set_expression 
+	::= covergroup_expression 
+
+cycle_delay 
+	::= DOUBLEHASH integral_number 
+	  | DOUBLEHASH identifier 
+	  | DOUBLEHASH LPAREN expression RPAREN 
+
+cycle_delay_const_range_expression 
+	::= constant_expression COLON DOLLAR 
+	  | constant_expression 
+
+cycle_delay_range 
+	::= DOUBLEHASH constant_primary 
+	  | DOUBLEHASH cycle_delay_const_range_expression 
+	  | DOUBLEHASH RBRACKET PLUS LBRACKET 
+	  | DOUBLEHASH RBRACKET STAR LBRACKET 
+
+data_declaration 
+	::= [ CONST ] [ VAR ] [ lifetime ] data_type_or_implicit list_of_variable_decl_assignments 
+	  | type_declaration 
+	  | package_import_declaration net_type_declaration 
+
+data_event 
+	::= timing_check_event 
+
+data_source_expression 
+	::= expression 
+
+data_type 
+	::= integer_vector_type [ signing ] { packed_dimension } 
+	  | integer_atom_type [ signing ] 
+	  | non_integer_type 
+	  | struct_union [ PACKED [ signing ] ] LBRACE { struct_union_member } RBRACE { packed_dimension } 
+	  | [ enum_base_type ] LBRACE enum_name_declaration { COMMA enum_name_declaration } RBRACE { packed_dimension } 
+	  | STRING 
+	  | CHANDLE 
+	  | VIRTUAL [ INTERFACE ] interface_identifier [ parameter_value_assignment ] [ modport_identifier ] 
+	  | [ class_scope 
+	  | package_scope ] type_identifier { packed_dimension } 
+	  | class_type 
+	  | EVENT 
+	  | ps_covergroup_identifier 
+	  | type_reference 
+
+data_type_or_implicit 
+	::= data_type 
+	  | implicit_data_type 
+
+data_type_or_void 
+	::= data_type 
+	  | VOID 
+
+decimal_number 
+	::= unsigned_number 
+	  | [ size ] decimal_base unsigned_number 
+	  | [ size ] decimal_base 
+	  | [ size ] decimal_base 
+
+default_skew 
+	::= INPUT clocking_skew 
+	  | OUTPUT clocking_skew 
+	  | INPUT clocking_skew OUTPUT clocking_skew 
+
+deferred_immediate_assert_statement 
+	::= ASSERT FINAL 
+	  | HASH unsigned_number LPAREN expression RPAREN action_block 
+
+deferred_immediate_assertion_item 
+	::= [ block_identifier COLON ] deferred_immediate_assertion_statement 
+
+deferred_immediate_assertion_statement 
+	::= deferred_immediate_assert_statement 
+	  | deferred_immediate_assume_statement 
+	  | deferred_immediate_cover_statement 
+
+deferred_immediate_assume_statement 
+	::= ASSUME FINAL 
+	  | HASH unsigned_number LPAREN expression RPAREN action_block 
+
+deferred_immediate_cover_statement 
+	::= COVER FINAL 
+	  | HASH unsigned_number LPAREN expression RPAREN statement_or_null 
+
+defparam_assignment 
+	::= hierarchical_parameter_identifier ASSIGNOP constant_mintypmax_expression 
+
+delay2 
+	::= HASH delay_value 
+	  | LPAREN COMMA mintypmax_expression [ COMMA mintypmax_expression ] RPAREN 
+
+delay3 
+	::= HASH delay_value 
+	  | LPAREN COMMA mintypmax_expression [ COMMA mintypmax_expression [ mintypmax_expression ] ] RPAREN 
+
+delay_control 
+	::= HASH delay_value 
+	  | HASH LPAREN mintypmax_expression RPAREN 
+
+delay_or_event_control 
+	::= delay_control 
+	  | event_control 
+	  | REPEAT LPAREN expression RPAREN event_control 
+
+delay_value 
+	::= unsigned_number 
+	  | real_number 
+	  | ps_identifier 
+	  | time_literal 
+	  | 1STEP 
+
+delayed_data 
+	::= terminal_identifier [ LBRACKET constant_mintypmax_expression RBRACKET ] 
+
+delayed_reference 
+	::= terminal_identifier [ LBRACKET constant_mintypmax_expression RBRACKET ] 
+
+disable_statement 
+	::= DISABLE hierarchical_task_identifier SEMI 
+	  | DISABLE hierarchical_block_identifier SEMI 
+	  | DISABLE FORK SEMI 
+
+dist_item 
+	::= value_range [ dist_weight ] 
+
+dist_list 
+	::= dist_item { COMMA dist_item } 
+
+dist_weight 
+	::= DWEQ 
+	  | DWNE expression 
+
+dpi_function_import_property 
+	::= CONTEXT 
+	  | PURE 
+
+dpi_function_proto 
+	::= function_prototype 
+
+dpi_import_export 
+	::= IMPORT dpi_spec_string [ dpi_function_import_property ] [ c_identifier ASSIGNOP ] dpi_function_proto SEMI 
+	  | IMPORT dpi_spec_string [ dpi_task_import_property ] [ c_identifier ASSIGNOP ] dpi_task_proto SEMI 
+	  | EXPORT dpi_spec_string [ c_identifier ASSIGNOP ] FUNCTION function_identifier SEMI 
+	  | EXPORT dpi_spec_string [ c_identifier ASSIGNOP ] TASK task_identifier SEMI 
+
+dpi_spec_string 
+	::= string_literal 
+
+dpi_task_import_property 
+	::= CONTEXT 
+
+dpi_task_proto 
+	::= task_prototype 
+
+drive_strength 
+	::= LPAREN strength0 COMMA strength1 RPAREN 
+	  | LPAREN strength1 COMMA strength0 RPAREN 
+
+dynamic_array_new 
+	::= NEW LBRACKET expression RBRACKET [ LPAREN expression RPAREN ] 
+
+dynamic_array_variable_identifier 
+	::= variable_identifier 
+
+edge_control_specifier 
+	::= EDGE LBRACKET edge_descriptor { COMMA edge_descriptor } LBRACKET 
+
+edge_descriptor 
+	::= number 
+
+edge_identifier 
+	::= POSEDGE 
+	  | NEGEDGE 
+	  | EDGE 
+
+edge_sensitive_path_declaration 
+	::= parallel_edge_sensitive_path_description ASSIGNOP path_delay_value 
+	  | full_edge_sensitive_path_description ASSIGNOP path_delay_value 
+
+elaboration_system_task 
+	::= [ LPAREN finish_number [ COMMA list_of_arguments ] RPAREN ] SEMI 
+	  | [ LPAREN [ list_of_arguments ] RPAREN ] SEMI 
+
+empty_queue 
+	::= LBRACKET RBRACKET 
+
+enable_gate_instance 
+	::= [ name_of_instance ] LPAREN output_terminal COMMA input_terminal COMMA enable_terminal RPAREN 
+
+enable_gatetype 
+	::= BUFIF0 
+	  | BUFIF1 
+	  | NOTIF0 
+	  | NOTIF1 
+
+enable_terminal 
+	::= expression 
+
+end_edge_offset 
+	::= mintypmax_expression 
+
+enum_base_type 
+	::= integer_atom_type [ signing ] 
+	  | integer_vector_type [ signing ] [ packed_dimension ] 
+	  | type_identifier [ packed_dimension ] 
+
+enum_identifier 
+	::= identifier 
+
+enum_name_declaration 
+	::= enum_identifier [ LBRACKET integral_number [ COLON integral_number ] RBRACKET ] [ ASSIGNOP constant_expression ] 
+
+error_limit_value 
+	::= limit_value 
+
+event_based_flag 
+	::= constant_expression 
+
+event_control 
+	::= AT hierarchical_event_identifier 
+	  | AT LPAREN event_expression RPAREN 
+	  | AT STAR 
+	  | AT LPAREN STAR RPAREN 
+	  | ps_or_hierarchical_sequence_identifier 
+
+event_expression 
+	::= [ edge_identifier ] expression [ IFF expression ] 
+	  | sequence_instance [ IFF expression ] 
+	  | event_expression OR event_expression 
+	  | event_expression COMMA event_expression 
+	  | LPAREN event_expression RPAREN 
+
+event_trigger 
+	::= ARROW hierarchical_event_identifier SEMI 
+	  | DOUBLEARROW [ delay_or_event_control ] hierarchical_event_identifier SEMI 
+
+expect_property_statement 
+	::= EXPECT LPAREN property_spec RPAREN action_block 
+
+expression 
+	::= primary 
+	  | unary_operator { attribute_instance } primary 
+	  | inc_or_dec_expression 
+	  | LPAREN operator_assignment RPAREN 
+	  | expression binary_operator { attribute_instance } expression 
+	  | conditional_expression 
+	  | inside_expression 
+	  | tagged_union_expression 
+
+expression_or_cond_pattern 
+	::= expression 
+	  | cond_pattern 
+
+expression_or_dist 
+	::= expression [ DIST LBRACE dist_list RBRACE ] 
+
+extern_constraint_declaration 
+	::= [ STATIC ] CONSTRAINT class_scope contraint_identifier constraint_block 
+
+extern_tf_declaration 
+	::= method_prototype SEMI 
+	  | task_prototype SEMI 
+
+final_construct 
+	::= FINAL function_statement 
+
+finish_number 
+	::= unsigned_number 
+
+fixed_point_number 
+	::= unsigned_number DOT unsigned_number 
+
+for_initialization 
+	::= list_of_variable_assignments 
+	  | for_variable_declaration { COMMA for_variable_declaration } 
+
+for_step 
+	::= for_step_assignment { COMMA for_step_assignment } 
+
+for_step_assignment 
+	::= operator_assignment 
+	  | inc_or_dec_expression 
+	  | function_subroutine_call 
+
+for_variable_declaration 
+	::= [ VAR ] data_type variable_identifier ASSIGNOP expression { COMMA variable_identifier ASSIGNOP expression } 
+
+formal_port_identifier 
+	::= identifier 
+
+full_edge_sensitive_path_description 
+	::= LPAREN [ edge_identifier ] list_of_path_inputs [ polarity_operator ] STAR GT LPAREN list_of_path_outputs [ polarity_operator ] COLON data_source_expression RPAREN RPAREN 
+
+full_path_description 
+	::= LPAREN list_of_path_inputs [ polarity_operator ] STAR GT list_of_path_outputs 
+
+fullskew_timing_check 
+	::= TFFULLSKEW LPAREN reference_event COMMA data_event COMMA timing_check_limit COMMA timing_check_limit [ COMMA [ notifier ] [ COMMA [ event_based_flag ] [ COMMA [ remain_active_flag ] ] ] ] 
+
+function_body_declaration 
+	::= function_data_type_or_implicit [ interface_identifier DOT 
+	  | class_scope ] function_identifier SEMI { tf_item_declaration } { function_statement_or_null } ENDFUNCTION [ COLON function_identifier ] 
+	  | function_data_type_or_implicit [ interface_identifier DOT 
+	  | class_scope ] function_identifier LPAREN [ tf_port_list ] RPAREN SEMI { block_item_declaration } { function_statement_or_null } ENDFUNCTION [ COLON function_identifier ] 
+
+function_data_type_or_implicit 
+	::= data_type_or_void 
+	  | implicit_data_type 
+
+function_declaration 
+	::= [ lifetime ] function_body_declaration 
+
+function_identifier 
+	::= identifier 
+
+function_prototype 
+	::= FUNCTION data_type_or_void function_identifier [ LPAREN [ tf_port_list ] RPAREN ] 
+
+function_statement 
+	::= statement 
+
+function_statement_or_null 
+	::= function_statement 
+	  | { attribute_instance } SEMI 
+
+function_subroutine_call 
+	::= subroutine_call 
+
+gate_instantiation 
+	::= cmos_switchtype [ delay3 ] cmos_switch_instance { COMMA cmos_switch_instance } SEMI 
+	  | enable_gatetype [ drive_strength ] [ delay3 ] enable_gate_instance { COMMA enable_gate_instance } SEMI 
+	  | mos_switchtype [ delay3 ] mos_switch_instance { COMMA mos_switch_instance } SEMI 
+	  | n_input_gatetype [ drive_strength ] [ delay2 ] n_input_gate_instance { COMMA n_input_gate_instance } SEMI 
+	  | n_output_gatetype [ drive_strength ] [ delay2 ] n_output_gate_instance { COMMA n_output_gate_instance } SEMI 
+	  | pass_en_switch_type [ delay2 ] pass_enable_switch_instance { COMMA pass_enable_switch_instance } SEMI 
+	  | pass_switchtype pass_switch_instance { COMMA pass_switch_instance } SEMI 
+	  | PULLDOWN [ pulldown_strength ] pull_gate_instance { COMMA pull_gate_instance } SEMI 
+	  | PULLUP [ pullup_strength ] pull_gate_instance { COMMA pull_gate_instance } SEMI 
+
+generate_block 
+	::= generate_item 
+	  | [ generate_block_identifier COLON ] BEGIN [ COLON generate_block_identifier ] { generate_item } END [ COLON generate_block_identifier ] 
+
+generate_block_identifier 
+	::= identifier 
+
+generate_item 
+	::= module_or_generate_item 
+	  | interface_or_generate_item 
+	  | checker_or_generate_item 
+
+generate_region 
+	::= GENERATE { generate_item } ENDGENERATE 
+
+genvar_declaration 
+	::= GENVAR list_of_genvar_identifiers SEMI 
+
+genvar_expression 
+	::= constant_expression 
+
+genvar_identifier 
+	::= identifier 
+
+genvar_initialization 
+	::= [ GENVAR ] genvar_identifier ASSIGNOP constant_expression 
+
+genvar_iteration 
+	::= genvar_identifier assignment_operator genvar_expression 
+	  | inc_or_dec_operator genvar_identifier 
+	  | genvar_identifier inc_or_dec_operator 
+
+goto_repetition 
+	::= LBRACKET ARROW const_or_range_expression RBRACKET 
+
+hex_number 
+	::= [ size ] hex_base hex_value 
+
+hierarchical_array_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_block_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_btf_identifier 
+	::= hierarchical_tf_identifier 
+	  | hierarchical_block_identifier 
+	  | [ hierarchical_identifier DOT 
+	  | class_scope ] method_identifier 
+
+hierarchical_event_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_identifier 
+	::= [ ROOTSCOPE DOT ] { identifier constant_bit_select DOT } identifier 
+
+hierarchical_instance 
+	::= name_of_instance LPAREN [ list_of_port_connections ] RPAREN 
+
+hierarchical_net_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_parameter_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_property_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_sequence_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_task_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_tf_identifier 
+	::= hierarchical_identifier 
+
+hierarchical_variable_identifier 
+	::= hierarchical_identifier 
+
+hold_timing_check 
+	::= TFHOLD LPAREN reference_event COMMA data_event COMMA timing_check_limit [ COMMA [ notifier ] ] RPAREN SEMI 
+
+identifier_list 
+	::= identifier { COMMA identifier } 
+
+if_generate_construct 
+	::= IF LPAREN constant_expression RPAREN generate_block [ ELSE generate_block ] 
+
+immediate_assertion_statement 
+	::= simple_immediate_assertion_statement 
+	  | deferred_immediate_assertion_statement 
+
+implicit_class_handle 
+	::= THIS DOT SUPER 
+	  | SUPER 
+	  | THIS 
+
+implicit_data_type 
+	::= [ signing ] { packed_dimension } 
+
+import_export 
+	::= IMPORT 
+	  | EXPORT 
+
+inc_or_dec_expression 
+	::= inc_or_dec_operator { attribute_instance } variable_lvalue 
+	  | variable_lvalue { attribute_instance } inc_or_dec_operator 
+
+inc_or_dec_operator 
+	::= INCREMENT 
+	  | DECREMENT 
+
+index_variable_identifier 
+	::= identifier 
+
+indexed_range 
+	::= expression PLUS COLON constant_expression 
+	  | expression MINUS COLON constant_expression 
+
+initial_construct 
+	::= INITIAL statement_or_null 
+
+inout_declaration 
+	::= INOUT net_port_type list_of_port_identifiers 
+
+inout_port_identifier 
+	::= identifier 
+
+inout_terminal 
+	::= net_lvalue 
+
+input_declaration 
+	::= INPUT net_port_type 
+	  | variable_port_type list_of_port_identifiers 
+
+input_identifier 
+	::= input_port_identifier 
+	  | inout_port_identifier 
+	  | interface_identifier DOT port_identifier 
+
+input_port_identifier 
+	::= identifier 
+
+input_terminal 
+	::= expression 
+
+inside_expression 
+	::= expression INSIDE LBRACKET open_range_list RBRACKET 
+
+instance_identifier 
+	::= identifier 
+
+integer_atom_type 
+	::= BYTE 
+	  | SHORTINT 
+	  | INT 
+	  | LONGINT 
+	  | INTEGER 
+	  | TIME 
+
+integer_covergroup_expression 
+	::= covergroup_expression 
+
+integer_type 
+	::= integer_vector_type 
+	  | integer_atom_type 
+
+integer_vector_type 
+	::= BIT 
+	  | LOGIC 
+	  | REG 
+
+integral_number 
+	::= decimal_number 
+	  | octal_number 
+	  | binary_number 
+	  | hex_number 
+
+interface_ansi_header 
+	::= { attribute_instance } INTERFACE [ lifetime ] interface_identifier { package_import_declaration } [ parameter_port_list ] [ list_of_port_declarations ] SEMI 
+
+interface_class_type 
+	::= ps_class_identifier [ parameter_value_assignment ] 
+
+interface_declaration 
+	::= interface_non_ansi_header [ timeunits_declaration ] { interface_item } ENDINTERFACE [ COLON interface_identifier ] 
+	  | interface_ansi_header [ timeunits_declaration ] { non_port_interface_item } ENDINTERFACE [ COLON interface_identifier ] 
+	  | { attribute_instance } INTERFACE interface_identifier LPAREN DOT STAR RPAREN SEMI [ timeunits_declaration ] { interface_item } ENDINTERFACE [ COLON interface_identifier ] 
+	  | EXTERN interface_non_ansi_header 
+	  | EXTERN interface_ansi_header 
+
+interface_identifier 
+	::= identifier 
+
+interface_instantiation 
+	::= interface_identifier [ parameter_value_assignment ] hierarchical_instance { COMMA hierarchical_instance } SEMI 
+
+interface_intance_identifier 
+	::= identifier 
+
+interface_item 
+	::= port_declaration SEMI 
+	  | non_port_interface_item 
+
+interface_non_ansi_header 
+	::= { attribute_instance } INTERFACE [ lifetime ] interface_identifier { package_import_declaration } [ parameter_port_list ] list_of_ports SEMI 
+
+interface_or_generate_item 
+	::= { attribute_instance } module_common_item 
+	  | { attribute_instance } modport_declaration 
+	  | { attribute_instance } extern_tf_declaration 
+
+interface_port_declaration 
+	::= interface_identifier [ DOT modport_identifier ] list_of_interface_identifiers 
+
+interface_port_header 
+	::= INTERFACE 
+	  | interface_identifier [ DOT modport_identifier ] 
+
+join_keyword 
+	::= JOIN 
+	  | JOINANY 
+	  | JOINNONE 
+
+jump_statement 
+	::= [ expression ] SEMI 
+	  | BREAK SEMI 
+	  | CONTINUE SEMI 
+
+let_actual_arg 
+	::= expression 
+
+let_declaration 
+	::= LET let_identifier [ LPAREN [ let_port_list ] RPAREN ] ASSIGNOP expression SEMI 
+
+let_expression 
+	::= [ package_scope ] let_identifier [ LPAREN [ let_list_of_arguments ] RPAREN ] 
+
+let_formal_type 
+	::= data_type_or_implicit 
+	  | UNTYPED 
+
+let_identifier 
+	::= identifier 
+
+let_list_of_arguments 
+	::= { [ let_actual_arg ] COMMA } [ COMMA { DOT identifier LPAREN [ let_actual_arg ] RPAREN COMMA } ] 
+	  | DOT identifier LPAREN [ let_actual_arg ] RPAREN { COMMA DOT identifier LPAREN [ let_actual_arg ] RPAREN } 
+
+let_port_item 
+	::= { attribute_instance } let_formal_type formal_port_identifier { variable_dimension } [ ASSIGNOP expression ] 
+
+let_port_list 
+	::= let_port_item { COMMA let_port_item } 
+
+lifetime 
+	::= STATIC 
+	  | AUTOMATIC 
+
+limit_value 
+	::= constant_mintypmax_expression 
+
+list_of_arguments 
+	::= [ expression ] { COMMA [ expression ] } { DOT identifier LPAREN [ expression ] RPAREN COMMA } 
+	  | DOT identifier LPAREN [ expression ] RPAREN { COMMA DOT identifier LPAREN [ expression ] RPAREN } 
+
+list_of_checker_port_connections 
+	::= ordered_checker_port_connection { COMMA ordered_checker_port_connection } 
+	  | named_checker_port_connection { COMMA named_checker_port_connection } 
+
+list_of_clocking_decl_assign 
+	::= clocking_decl_assign { COMMA clocking_decl_assign } 
+
+list_of_cross_items 
+	::= cross_item COMMA cross_item { COMMA cross_item } 
+
+list_of_defparam_assignments 
+	::= defparam_assignment { COMMA defparam_assignment } 
+
+list_of_genvar_identifiers 
+	::= genvar_identifier { COMMA genvar_identifier } 
+
+list_of_interface_identifiers 
+	::= interface_identifier { unpacked_dimension } { COMMA interface_identifier { unpacked_dimension } } 
+
+list_of_net_assignments 
+	::= net_assignment { COMMA net_assignment } 
+
+list_of_net_decl_assignments 
+	::= net_decl_assignment { COMMA net_decl_assignment } 
+
+list_of_param_assignments 
+	::= param_assignment { COMMA param_assignment } 
+
+list_of_parameter_assignments 
+	::= ordered_parameter_assignment { COMMA ordered_parameter_assignment } 
+	  | named_parameter_assignment { COMMA named_parameter_assignment } 
+
+list_of_path_delay_expressions 
+	::= t_path_delay_expression 
+	  | trise_path_delay_expression tfall_path_delay_expression 
+	  | trise_path_delay_expression tfall_path_delay_expression tz_path_delay_expression 
+	  | t01_path_delay_expression t10_path_delay_expression t0z_path_delay_expression tz1_path_delay_expression t1z_path_delay_expression tz0_path_delay_expression 
+	  | t01_path_delay_expression t10_path_delay_expression t0z_path_delay_expression tz1_path_delay_expression t1z_path_delay_expression tz0_path_delay_expression t0x_path_delay_expression tx1_path_delay_expression t1x_path_delay_expression tx0_path_delay_expression txz_path_delay_expression tzx_path_delay_expression 
+
+list_of_path_inputs 
+	::= specify_input_terminal_descriptor { COMMA specify_input_terminal_descriptor } 
+
+list_of_path_outputs 
+	::= specify_output_terminal_descriptor { COMMA specify_output_terminal_descriptor } 
+
+list_of_port_connections 
+	::= ordered_port_connection { COMMA ordered_port_connection } 
+	  | named_port_connection { COMMA named_port_connection } 
+
+list_of_port_declarations 
+	::= LPAREN [ { attribute_instance } ansi_port_declaration { COMMA { attribute_instance } ansi_port_declaration } ] RPAREN 
+
+list_of_port_identifiers 
+	::= port_identifier { unpacked_dimension } { COMMA port_identifier { unpacked_dimension } } 
+
+list_of_ports 
+	::= LPAREN port { COMMA port } RPAREN 
+
+list_of_specparam_assignments 
+	::= specparam_assignment { COMMA specparam_assignment } 
+
+list_of_tf_variable_identifiers 
+	::= port_identifier { variable_dimension } [ ASSIGNOP expression ] { COMMA port_identifier { variable_dimension } [ ASSIGNOP expression ] } 
+
+list_of_type_assignments 
+	::= type_assignment { COMMA type_assignment } 
+
+list_of_variable_assignments 
+	::= variable_assignment { COMMA variable_assignment } 
+
+list_of_variable_decl_assignments 
+	::= variable_decl_assignment { COMMA variable_decl_assignment } 
+
+list_of_variable_identifiers 
+	::= variable_identifier { variable_dimension } { COMMA variable_identifier { variable_dimension } } 
+
+local_parameter_declaration 
+	::= LOCALPARAM data_type_or_implicit list_of_param_assignments 
+	  | LOCALPARAM TYPE list_of_type_assignments 
+
+loop_generate_construct 
+	::= FOR LPAREN genvar_initialization SEMI genvar_expression SEMI genvar_iteration RPAREN generate_block 
+
+loop_statement 
+	::= FOREVER statement_or_null 
+	  | REPEAT LPAREN expression RPAREN statement_or_null 
+	  | WHILE LPAREN expression RPAREN statement_or_null 
+	  | LPAREN [ for_initialization ] SEMI [ expression ] SEMI [ for_step ] RPAREN statement_or_null 
+	  | DO statement_or_null WHILE LPAREN expression RPAREN SEMI 
+	  | LPAREN ps_or_hierarchical_array_identifier LBRACKET loop_variables RBRACKET RPAREN statement 
+
+loop_variables 
+	::= [ index_variable_identifier ] { COMMA [ index_variable_identifier ] } 
+
+member_identifier 
+	::= identifier 
+
+method_call 
+	::= method_call_root DOT method_call_body 
+
+method_call_body 
+	::= method_identifier { attribute_instance } [ LPAREN list_of_arguments RPAREN ] 
+	  | built_in_method_call 
+
+method_call_root 
+	::= primary 
+	  | implicit_class_handle 
+
+method_identifier 
+	::= identifier 
+
+method_prototype 
+	::= task_prototype 
+	  | function_prototype 
+
+method_qualifier 
+	::= [ PURE ] VIRTUAL 
+	  | class_item_qualifier 
+
+mintypmax_expression 
+	::= expression COLON expression COLON expression 
+	  | expression 
+
+modport_clocking_declaration 
+	::= CLOCKING clocking_identifier 
+
+modport_declaration 
+	::= MODPORT modport_item { COMMA modport_item } SEMI 
+
+modport_identifier 
+	::= identifier 
+
+modport_item 
+	::= modport_identifier LPAREN modport_ports_declaration { COMMA modport_ports_declaration } RPAREN 
+
+modport_ports_declaration 
+	::= { attribute_instance } modport_simple_ports_declaration 
+	  | { attribute_instance } modport_tf_ports_declaration 
+	  | { attribute_instance } modport_clocking_declaration 
+
+modport_simple_port 
+	::= port_identifier 
+	  | DOT port_identifier LPAREN [ expression ] RPAREN 
+
+modport_simple_ports_declaration 
+	::= port_direction modport_simple_port { COMMA modport_simple_port } 
+
+modport_tf_port 
+	::= method_prototype 
+	  | tf_identifier 
+
+modport_tf_ports_declaration 
+	::= import_export modport_tf_port { COMMA modport_tf_port } 
+
+module_ansi_header 
+	::= { attribute_instance } module_keyword [ lifetime ] module_identifier { package_import_declaration } [ parameter_port_list ] [ list_of_port_declarations ] SEMI 
+
+module_common_item 
+	::= module_or_generate_item_declaration 
+	  | interface_instantiation 
+	  | program_instantiation 
+	  | assertion_item 
+	  | bind_directive 
+	  | continuous_assign 
+	  | net_alias 
+	  | initial_construct 
+	  | final_construct 
+	  | always_construct 
+	  | loop_generate_construct 
+	  | conditional_generate_construct 
+	  | elaboration_system_task 
+
+module_declaration 
+	::= module_non_ansi_header [ timeunits_declaration ] { module_item } ENDMODULE [ COLON module_identifier ] 
+	  | module_ansi_header [ timeunits_declaration ] { non_port_module_item } ENDMODULE [ COLON module_identifier ] 
+	  | { attribute_instance } module_keyword [ lifetime ] module_identifier LPAREN DOT STAR RPAREN SEMI [ timeunits_declaration ] { module_item } ENDMODULE [ COLON module_identifier ] 
+	  | EXTERN module_non_ansi_header 
+	  | EXTERN module_ansi_header 
+
+module_identifier 
+	::= identifier 
+
+module_instantiation 
+	::= module_identifier [ parameter_value_assignment ] hierarchical_instance { COMMA hierarchical_instance } SEMI 
+
+module_item 
+	::= port_declaration SEMI 
+	  | non_port_module_item 
+
+module_keyword 
+	::= MODULE 
+	  | MACROMODULE 
+
+module_non_ansi_header 
+	::= { attribute_instance } module_keyword [ lifetime ] module_identifier { package_import_declaration } [ parameter_port_list ] list_of_ports SEMI 
+
+module_or_generate_item 
+	::= { attribute_instance } parameter_override 
+	  | { attribute_instance } gate_instantiation 
+	  | { attribute_instance } udp_instantiation 
+	  | { attribute_instance } module_instantiation 
+	  | { attribute_instance } module_common_item 
+
+module_or_generate_item_declaration 
+	::= package_or_generate_item_declaration 
+	  | genvar_declaration 
+	  | clocking_declaration 
+	  | DEFAULT CLOCKING module_identifier SEMI 
+	  | DEFAULT DISABLE IFF expression_or_dist SEMI 
+
+module_path_concatenation 
+	::= LBRACE module_path_expression { COMMA module_path_expression } RBRACE 
+
+module_path_conditional_expression 
+	::= module_path_expression QUESTION { attribute_instance } module_path_expression COLON module_path_expression 
+
+module_path_expression 
+	::= module_path_primary 
+	  | unary_module_path_operator { attribute_instance } module_path_primary 
+	  | module_path_expression binary_module_path_operator { attribute_instance } module_path_expression 
+	  | module_path_conditional_expression 
+
+module_path_mintypmax_expression 
+	::= module_path_expression COLON module_path_expression COLON module_path_expression 
+	  | module_path_expression 
+
+module_path_multiple_concatenation 
+	::= LBRACE constant_expression module_path_concatenation RBRACE 
+
+module_path_primary 
+	::= number 
+	  | identifier 
+	  | module_path_concatenation 
+	  | module_path_multiple_concatenation 
+	  | function_subroutine_call 
+	  | LPAREN module_path_mintypmax_expression RPAREN 
+
+mos_switch_instance 
+	::= [ name_of_instance ] LPAREN output_terminal COMMA input_terminal COMMA enable_terminal RPAREN 
+
+mos_switchtype 
+	::= NMOS 
+	  | PMOS 
+	  | RNMOS 
+	  | RPMOS 
+
+multiple_concatenation 
+	::= LBRACE expression concatenation RBRACE 
+
+n_control_terminal 
+	::= expression 
+
+n_input_gate_instance 
+	::= [ name_of_instance ] LPAREN output_terminal COMMA input_terminal { COMMA input_terminal } RPAREN 
+
+n_input_gatetype 
+	::= AND 
+	  | NAND 
+	  | OR 
+	  | NOR 
+	  | XOR 
+	  | XNOR 
+
+n_output_gate_instance 
+	::= [ name_of_instance ] LPAREN output_terminal { COMMA output_terminal } COMMA input_terminal RPAREN 
+
+n_output_gatetype 
+	::= BUF 
+	  | NOT 
+
+name_of_instance 
+	::= instance_identifier { unpacked_dimension } 
+
+named_checker_port_connection 
+	::= { attribute_instance } DOT formal_port_identifier 
+	  | STAR [ LPAREN [ property_actual_arg ] RPAREN ] 
+
+named_parameter_assignment 
+	::= DOT parameter_identifier LPAREN [ param_expression ] RPAREN 
+
+named_port_connection 
+	::= { attribute_instance } DOT port_identifier 
+	  | STAR [ LPAREN [ expression ] RPAREN ] 
+
+net_alias 
+	::= ALIAS net_lvalue ASSIGNOP net_lvalue { ASSIGNOP net_lvalue } SEMI 
+
+net_assignment 
+	::= net_lvalue ASSIGNOP expression 
+
+net_decl_assignment 
+	::= net_identifier { unpacked_dimension } [ ASSIGNOP expression ] 
+
+net_declaration 
+	::= net_type [ drive_strength 
+	  | charge_strength ] [ VECTORED 
+	  | SCALARED ] data_type_or_implicit [ delay3 ] list_of_net_decl_assignments SEMI 
+	  | net_type_identifier [ delay_control ] list_of_net_decl_assignments SEMI 
+	  | INTERCONNECT implicit_data_type [ delay_value ] net_identifier { unpacked_dimension } [ COMMA net_identifier { unpacked_dimension } ] SEMI 
+
+net_identifier 
+	::= identifier 
+
+net_lvalue 
+	::= ps_or_hierarchical_net_identifier constant_select 
+	  | LBRACE net_lvalue { COMMA net_lvalue } RBRACE 
+	  | [ assignment_pattern_expression_type ] assignment_pattern_net_lvalue 
+
+net_port_header 
+	::= [ port_direction ] net_port_type 
+
+net_port_type 
+	::= [ net_type ] data_type_or_implicit 
+	  | net_type_identifier 
+	  | INTERCONNECT implicit_data_type 
+
+net_type 
+	::= SUPPLY0 
+	  | SUPPLY1 
+	  | TRI 
+	  | TRIAND 
+	  | TRIOR 
+	  | TRIREG 
+	  | TRI0 
+	  | TRI1 
+	  | UWIRE 
+	  | WIRE 
+	  | WAND 
+	  | WOR 
+
+net_type_declaration 
+	::= NETTYPE data_type net_type_identifier [ WITH [ package_scope 
+	  | class_scope ] tf_identifier ] SEMI 
+	  | NETTYPE [ package_scope 
+	  | class_scope ] net_type_identifier net_type_identifier SEMI 
+
+net_type_identifier 
+	::= identifier 
+
+nochange_timing_check 
+	::= TFNOCHANGE LPAREN reference_event COMMA data_event COMMA start_edge_offset COMMA end_edge_offset [ COMMA [ notifier ] ] RPAREN SEMI 
+
+non_consecutive_repetition 
+	::= LBRACKET ASSIGNOP const_or_range_expression RBRACKET 
+
+non_integer_type 
+	::= SHORTREAL 
+	  | REAL 
+	  | REALTIME 
+
+non_port_interface_item 
+	::= generate_region 
+	  | interface_or_generate_item 
+	  | program_declaration 
+	  | interface_declaration 
+	  | timeunits_declaration 
+
+non_port_module_item 
+	::= generate_region 
+	  | module_or_generate_item 
+	  | specify_block 
+	  | { attribute_instance } specparam_declaration 
+	  | program_declaration 
+	  | module_declaration 
+	  | interface_declaration 
+	  | timeunits_declaration 
+
+non_port_program_item 
+	::= { attribute_instance } continuous_assign 
+	  | { attribute_instance } module_or_generate_item_declaration 
+	  | { attribute_instance } initial_construct 
+	  | { attribute_instance } final_construct 
+	  | { attribute_instance } concurrent_assertion_item 
+	  | timeunits_declaration 
+	  | program_generate_item 
+
+nonblocking_assignment 
+	::= variable_lvalue LTEQ [ delay_or_event_control ] expression 
+
+nonrange_select 
+	::= [ { DOT member_identifier bit_select } DOT member_identifier ] bit_select 
+
+nonrange_variable_lvalue 
+	::= [ implicit_class_handle DOT 
+	  | package_scope ] hierarchical_variable_identifier nonrange_select 
+
+notifier 
+	::= variable_identifier 
+
+number 
+	::= integral_number 
+	  | real_number 
+
+octal_number 
+	::= [ size ] octal_base octal_value 
+
+open_range_list 
+	::= open_value_range { COMMA open_value_range } 
+
+open_value_range 
+	::= value_range 
+
+operator_assignment 
+	::= variable_lvalue assignment_operator expression 
+
+ordered_checker_port_connection 
+	::= { attribute_instance } [ property_actual_arg ] 
+
+ordered_parameter_assignment 
+	::= param_expression 
+
+ordered_port_connection 
+	::= { attribute_instance } [ expression ] 
+
+output_declaration 
+	::= OUTPUT net_port_type 
+	  | variable_port_type list_of_port_identifiers 
+
+output_identifier 
+	::= output_port_identifier 
+	  | inout_port_identifier 
+	  | interface_identifier DOT port_identifier 
+
+output_port_identifier 
+	::= identifier 
+
+output_terminal 
+	::= net_lvalue 
+
+overload_declaration 
+	::= BIND overload_operator FUNCTION data_type function_identifier LPAREN overload_proto_formals RPAREN SEMI 
+
+overload_operator 
+	::= PLUS 
+	  | INCREMENT 
+	  | MINUS 
+	  | DECREMENT 
+	  | STAR 
+	  | DOUBLESTAR 
+	  | SLASH 
+	  | PERCENT 
+	  | EQ 
+	  | NOTEQ 
+	  | LT 
+	  | LTEQ 
+	  | GT 
+	  | GTEQ 
+	  | ASSIGNOP 
+
+overload_proto_formals 
+	::= data_type { COMMA data_type } 
+
+p_control_terminal 
+	::= expression 
+
+package_identifier 
+	::= identifier 
+
+package_import_declaration 
+	::= IMPORT package_import_item { COMMA package_import_item } SEMI 
+
+package_import_item 
+	::= package_identifier NAMEQUAL identifier 
+	  | STAR 
+
+package_or_generate_item_declaration 
+	::= net_declaration 
+	  | data_declaration 
+	  | task_declaration 
+	  | function_declaration 
+	  | checker_declaration 
+	  | dpi_import_export 
+	  | extern_constraint_declaration 
+	  | class_declaration 
+	  | class_constructor_declaration 
+	  | local_parameter_declaration SEMI 
+	  | parameter_declaration SEMI 
+	  | covergroup_declaration 
+	  | overload_declaration 
+	  | assertion_item_declaration 
+	  | SEMI 
+
+package_scope 
+	::= package_identifier NAMEQUAL 
+	  | UNITSCOPE NAMEQUAL 
+
+packed_dimension 
+	::= LBRACKET constant_range RBRACKET 
+	  | unsized_dimension 
+
+par_block 
+	::= FORK [ COLON block_identifier ] { block_item_declaration } { statement_or_null } join_keyword [ COLON block_identifier ] 
+
+parallel_edge_sensitive_path_description 
+	::= LPAREN [ edge_identifier ] specify_input_terminal_descriptor [ polarity_operator ] EQARROW LPAREN specify_output_terminal_descriptor [ polarity_operator ] COLON data_source_expression RPAREN RPAREN 
+
+parallel_path_description 
+	::= LPAREN specify_input_terminal_descriptor [ polarity_operator ] EQARROW specify_output_terminal_descriptor RPAREN 
+
+param_assignment 
+	::= parameter_identifier { unpacked_dimension } [ ASSIGNOP constant_param_expression ] 
+
+param_expression 
+	::= mintypmax_expression 
+	  | data_type 
+	  | DOLLAR 
+
+parameter_declaration 
+	::= PARAMETER data_type_or_implicit list_of_param_assignments 
+	  | PARAMETER TYPE list_of_type_assignments 
+
+parameter_identifier 
+	::= identifier 
+
+parameter_override 
+	::= DEFPARAM list_of_defparam_assignments SEMI 
+
+parameter_port_declaration 
+	::= parameter_declaration 
+	  | local_parameter_declaration 
+	  | data_type list_of_param_assignments 
+	  | TYPE list_of_type_assignments 
+
+parameter_port_list 
+	::= HASH LPAREN [ list_of_param_assignments ] { parameter_port_declaration COMMA } RPAREN 
+
+parameter_value_assignment 
+	::= HASH LPAREN [ list_of_parameter_assignments ] RPAREN 
+
+part_select_range 
+	::= constant_range 
+	  | indexed_range 
+
+pass_en_switch_type 
+	::= TRANIF0 
+	  | TRANIF1 
+	  | RTRANIF1 
+	  | RTRANIF0 
+
+pass_enable_switch_instance 
+	::= [ name_of_instance ] LPAREN inout_terminal COMMA inout_terminal COMMA enable_terminal RPAREN 
+
+pass_switch_instance 
+	::= [ name_of_instance ] LPAREN inout_terminal COMMA inout_terminal RPAREN 
+
+pass_switchtype 
+	::= TRAN 
+	  | RTRAN 
+
+path_declaration 
+	::= simple_path_declaration SEMI 
+	  | edge_sensitive_path_declaration SEMI 
+	  | state_dependent_path_declaration SEMI 
+
+path_delay_expression 
+	::= constant_mintypmax_expression 
+
+path_delay_value 
+	::= list_of_path_delay_expressions 
+	  | LPAREN list_of_path_delay_expressions RPAREN 
+
+pattern 
+	::= DOT variable_identifier 
+	  | DOT STAR 
+	  | constant_expression 
+	  | TAGGED member_identifier [ pattern ] 
+	  | APOS LBRACE pattern { COMMA pattern } RBRACE 
+	  | APOS LBRACE member_identifier COLON pattern RBRACE { COMMA LBRACE member_identifier COLON pattern RBRACE } 
+
+period_timing_check 
+	::= TFPERIOD LPAREN controlled_reference_event COMMA timing_check_limit [ COMMA [ notifier ] ] RPAREN SEMI 
+
+polarity_operator 
+	::= PLUS 
+	  | MINUS 
+
+port 
+	::= DOT port_identifier LPAREN [ port_expression ] RPAREN 
+	  | [ port_expression ] 
+
+port_declaration 
+	::= { attribute_instance } inout_declaration 
+	  | { attribute_instance } input_declaration 
+	  | { attribute_instance } output_declaration 
+	  | { attribute_instance } ref_declaration 
+	  | { attribute_instance } interface_port_declaration 
+
+port_direction 
+	::= INOUT 
+	  | INPUT 
+	  | OUTPUT 
+	  | REF 
+
+port_expression 
+	::= { port_reference COMMA } 
+
+port_identifier 
+	::= identifier 
+
+port_reference 
+	::= port_identifier constant_select 
+
+primary 
+	::= primary_literal 
+	  | [ class_qualifier 
+	  | package_scope ] hierarchical_identifier select 
+	  | empty_queue 
+	  | concatenation [ LBRACKET range_expression RBRACKET ] 
+	  | multiple_concatenation [ LBRACKET range_expression RBRACKET ] 
+	  | function_subroutine_call 
+	  | let_expression 
+	  | LPAREN mintypmax_expression RPAREN 
+	  | cast 
+	  | assignment_pattern_expression 
+	  | streaming_concatenation 
+	  | sequence_method_call 
+	  | THIS 
+	  | DOLLAR 
+	  | NULL 
+
+primary_literal 
+	::= number 
+	  | time_literal 
+	  | unbased_unsized_literal 
+	  | string_literal 
+
+procedural_assertion_statement 
+	::= concurrent_assertion_statement 
+	  | immediate_assertion_statement 
+	  | checker_instantiation 
+
+procedural_continuous_assignment 
+	::= ASSIGN variable_assignment 
+	  | DEASSIGN variable_lvalue 
+	  | FORCE variable_assignment 
+	  | FORCE net_assignment 
+	  | RELEASE variable_lvalue 
+	  | RELEASE net_lvalue 
+
+procedural_timing_control 
+	::= delay_control 
+	  | event_control 
+	  | cycle_delay 
+
+procedural_timing_control_statement 
+	::= procedural_timing_control statement_or_null 
+
+production 
+	::= [ data_type_or_void ] production_identifier [ LPAREN tf_port_list RPAREN ] COLON rs_rule { PIPE rs_rule } SEMI 
+
+production_identifier 
+	::= identifier 
+
+production_item 
+	::= production_identifier [ LPAREN list_of_arguments RPAREN ] 
+
+program_ansi_header 
+	::= { attribute_instance } PROGRAM [ lifetime ] program_identifier { package_import_declaration } [ parameter_port_list ] [ list_of_port_declarations ] SEMI 
+
+program_declaration 
+	::= program_non_ansi_header [ timeunits_declaration ] { program_item } ENDPROGRAM [ COLON program_identifier ] 
+	  | program_ansi_header [ timeunits_declaration ] { non_port_program_item } ENDPROGRAM [ COLON program_identifier ] 
+	  | { attribute_instance } PROGRAM program_identifier LPAREN DOT STAR RPAREN SEMI [ timeunits_declaration ] { program_item } ENDPROGRAM [ COLON program_identifier ] 
+	  | EXTERN program_non_ansi_header 
+	  | EXTERN program_ansi_header 
+
+program_generate_item 
+	::= loop_generate_construct 
+	  | conditional_generate_construct 
+	  | generate_region 
+	  | elaboration_system_task 
+
+program_identifier 
+	::= identifier 
+
+program_instantiation 
+	::= program_identifier [ parameter_value_assignment ] hierarchical_instance { COMMA hierarchical_instance } SEMI 
+
+program_item 
+	::= port_declaration SEMI 
+	  | non_port_program_item 
+
+program_non_ansi_header 
+	::= { attribute_instance } PROGRAM [ lifetime ] program_identifier { package_import_declaration } [ parameter_port_list ] list_of_ports SEMI 
+
+property_actual_arg 
+	::= property_expr 
+	  | sequence_actual_arg 
+
+property_case_item 
+	::= { expression_or_dist } COLON property_expr [ SEMI ] 
+	  | DEFAULT [ COLON ] property_expr [ SEMI ] 
+
+property_declaration 
+	::= PROPERTY property_identifier [ LPAREN [ property_port_list ] RPAREN ] SEMI { assertion_variable_declaration } property_spec [ SEMI ] ENDPROPERTY [ property_identifier ] 
+
+property_expr 
+	::= sequence_expr 
+	  | STRONG LPAREN sequence_expr RPAREN 
+	  | WEAK LPAREN sequence_expr RPAREN 
+	  | LPAREN property_expr RPAREN 
+	  | NOT property_expr 
+	  | property_expr OR property_expr 
+	  | property_expr AND property_expr 
+	  | sequence_expr IMPLICATIONOVERLAPPED property_expr 
+	  | sequence_expr IMPLICATION property_expr 
+	  | IF LPAREN expression_or_dist RPAREN property_expr [ ELSE property_expr ] 
+	  | CASE LPAREN expression_or_dist RPAREN { property_case_item } ENDCASE 
+	  | sequence_expr FOLLOWEDBYOVERLAPPED property_expr 
+	  | sequence_expr FOLLOWEDBY property_expr 
+	  | NEXTTIME [ LBRACKET constant_expression RBRACKET ] property_expr 
+	  | SNEXTTIME [ LBRACKET constant_expression RBRACKET ] property_expr 
+	  | ALWAYS [ LBRACKET cycle_delay_const_range_expression RBRACKET ] property_expr 
+	  | SALWAYS LBRACKET constant_range RBRACKET property_expr 
+	  | EVENTUALLY LBRACKET constant_range RBRACKET property_expr 
+	  | SEVENTUALLY [ LBRACKET cycle_delay_const_range_expression RBRACKET ] property_expr 
+	  | property_expr UNTIL property_expr 
+	  | property_expr SUNTIL property_expr 
+	  | property_expr UNTILWITH property_expr 
+	  | property_expr SUNTILWITH property_expr 
+	  | property_expr IMPLIES property_expr 
+	  | property_expr IFF property_expr 
+	  | ACCEPTON LPAREN expression_or_dist RPAREN property_expr 
+	  | REJECTON LPAREN expression_or_dist RPAREN property_expr 
+	  | SYNCREJECTON LPAREN expression_or_dist RPAREN property_expr 
+	  | SYNCREJECTON LPAREN expression_or_dist RPAREN property_expr 
+	  | property_instance 
+	  | clocking_event property_expr 
+
+property_formal_type 
+	::= sequence_formal_type 
+	  | PROPERTY 
+
+property_identifier 
+	::= identifier 
+
+property_instance 
+	::= ps_or_hierarchical_property_identifier [ LPAREN [ property_list_of_arguments ] RPAREN ] 
+
+property_list_of_arguments 
+	::= { [ property_actual_arg ] COMMA } [ COMMA DOT identifier LPAREN [ property_actual_arg ] RPAREN { COMMA DOT identifier LPAREN [ property_actual_arg ] RPAREN } ] 
+	  | DOT identifier LPAREN [ property_actual_arg ] RPAREN { COMMA DOT identifier LPAREN [ property_actual_arg ] RPAREN } 
+
+property_lvar_port_direction 
+	::= INPUT 
+
+property_port_item 
+	::= { attribute_instance } [ LOCAL [ property_lvar_port_direction ] ] property_formal_type formal_port_identifier { variable_dimension } [ ASSIGNOP property_actual_arg ] 
+
+property_port_list 
+	::= property_port_item { COMMA property_port_item } 
+
+property_qualifier 
+	::= random_qualifier 
+	  | class_item_qualifier 
+
+property_spec 
+	::= [ clocking_event ] [ DISABLE IFF LPAREN expression_or_dist RPAREN ] property_expr 
+
+ps_checker_identifier 
+	::= [ package_scope ] checker_identifier 
+
+ps_class_identifier 
+	::= [ package_scope ] class_identifier 
+
+ps_covergroup_identifier 
+	::= [ package_scope ] covergroup_identifier 
+
+ps_identifier 
+	::= [ package_scope ] identifier 
+
+ps_or_hierarchical_array_identifier 
+	::= implicit_class_handle DOT 
+	  | class_scope 
+	  | package_scope hierarchical_array_identifier 
+
+ps_or_hierarchical_net_identifier 
+	::= [ package_scope ] net_identifier 
+	  | hierarchical_net_identifier 
+
+ps_or_hierarchical_property_identifier 
+	::= [ package_scope ] property_identifier 
+	  | hierarchical_property_identifier 
+
+ps_or_hierarchical_sequence_identifier 
+	::= [ package_scope ] sequence_identifier 
+	  | hierarchical_sequence_identifier 
+
+ps_or_hierarchical_tf_identifier 
+	::= [ package_scope ] tf_identifier 
+	  | hierarchical_tf_identifier 
+
+ps_parameter_identifier 
+	::= [ package_scope 
+	  | class_scope ] parameter_identifier 
+	  | { generate_block_identifier [ LBRACKET constant_expression RBRACKET ] DOT } parameter_identifier 
+
+ps_type_identifier 
+	::= [ LOCAL NAMEQUAL 
+	  | package_scope ] type_identifier 
+
+pull_gate_instance 
+	::= [ name_of_instance ] LPAREN output_terminal RPAREN 
+
+pulldown_strength 
+	::= LPAREN strength0 COMMA strength1 RPAREN 
+	  | LPAREN strength1 COMMA strength0 RPAREN 
+	  | LPAREN strength0 RPAREN 
+
+pullup_strength 
+	::= LPAREN strength0 COMMA strength1 RPAREN 
+	  | LPAREN strength1 COMMA strength0 RPAREN 
+	  | LPAREN strength1 RPAREN 
+
+pulse_control_specparam 
+	::= PATHPULSE ASSIGNOP LPAREN reject_limit_value [ COMMA error_limit_value ] 
+
+pulsestyle_declaration 
+	::= PULSESTYLEONEVENT list_of_path_outputs SEMI 
+	  | PULSESTYLEONDETECT list_of_path_outputs SEMI 
+
+queue_dimension 
+	::= LBRACKET DOLLAR [ COLON constant_expression ] RBRACKET 
+
+randcase_item 
+	::= expression COLON statement_or_null 
+
+randcase_statement 
+	::= RANDCASE { randcase_item } ENDCASE 
+
+random_qualifier 
+	::= RAND 
+	  | RANDC 
+
+randomize_call 
+	::= RANDOMIZE { attribute_instance } [ LPAREN [ variable_identifier_list 
+	  | NULL ] RPAREN ] [ WITH [ LPAREN [ identifier_list ] RPAREN ] constraint_block ] 
+
+randsequence_statement 
+	::= RANDSEQUENCE LPAREN [ production_identifier ] RPAREN { production } ENDSEQUENCE 
+
+range_expression 
+	::= expression 
+	  | part_select_range 
+
+real_number 
+	::= fixed_point_number 
+	  | unsigned_number [ DOT unsigned_number ] EXP [ sign ] unsigned_number 
+
+recovery_timing_check 
+	::= TFRECOVERY LPAREN reference_event COMMA data_event COMMA timing_check_limit [ COMMA [ notifier ] ] RPAREN SEMI 
+
+recrem_timing_check 
+	::= TFRECREM LPAREN reference_event COMMA data_event COMMA timing_check_limit COMMA timing_check_limit [ COMMA [ notifier ] [ COMMA [ timestamp_condition ] [ COMMA [ timecheck_condition ] [ COMMA [ delayed_reference ] [ COMMA [ delayed_data ] ] ] ] ] ] LPAREN SEMI 
+
+ref_declaration 
+	::= REF variable_port_type list_of_variable_identifiers 
+
+reference_event 
+	::= timing_check_event 
+
+reject_limit_value 
+	::= limit_value 
+
+remain_active_flag 
+	::= constant_mintypmax_expression 
+
+removal_timing_check 
+	::= TFREMOVAL LPAREN reference_event COMMA data_event COMMA timing_check_limit [ COMMA [ notifier ] ] RPAREN SEMI 
+
+repeat_range 
+	::= covergroup_expression [ COLON covergroup_expression ] 
+
+restrict_property_statement 
+	::= RESTRICT LPAREN property_spec RPAREN SEMI 
+
+rs_case 
+	::= CASE LPAREN case_expression RPAREN { rs_case_item } ENDCASE 
+
+rs_case_item 
+	::= case_item_expression { COMMA case_item_expression } COLON production_item SEMI 
+	  | DEFAULT [ COLON ] production_item SEMI 
+
+rs_code_block 
+	::= LBRACKET { data_declaration } { statement_or_null } RBRACKET 
+
+rs_if_else 
+	::= IF LPAREN expression RPAREN production_item [ ELSE production_item ] 
+
+rs_prod 
+	::= production_item 
+	  | rs_code_block 
+	  | rs_if_else 
+	  | rs_repeat 
+	  | rs_case 
+
+rs_production_list 
+	::= { rs_prod } 
+	  | RAND JOIN [ LPAREN expression RPAREN ] production_item { production_item } 
+
+rs_repeat 
+	::= REPEAT LPAREN expression RPAREN production_item 
+
+rs_rule 
+	::= rs_production_list [ DWEQ weight_specification [ rs_code_block ] ] 
+
+scalar_constant 
+	::= number 
+
+scalar_timing_check_condition 
+	::= TILDE expression 
+	  | expression EQ scalar_constant 
+	  | expression EQUIVALENT scalar_constant 
+	  | expression NOTEQ scalar_constant 
+	  | expression NOTEQUIVALENT scalar_constant 
+	  | expression 
+
+select 
+	::= [ { DOT member_identifier bit_select } DOT member_identifier ] bit_select [ LBRACKET part_select_range RBRACKET ] 
+
+select_condition 
+	::= BINSOF LPAREN bins_expression RPAREN [ INTERSECT LBRACE covergroup_range_list RBRACE ] 
+
+select_expression 
+	::= select_condition 
+	  | NOTOP select_condition 
+	  | select_expression ANDOP select_expression 
+	  | select_expression OROP select_expression 
+	  | LPAREN select_expression RPAREN 
+	  | select_expression WITH LPAREN with_covergroup_expression RPAREN [ MATCHES integer_covergroup_expression ] 
+	  | cross_identifier 
+	  | cross_set_expression [ MATCHES integer_covergroup_expression ] 
+
+seq_block 
+	::= BEGIN [ COLON block_identifier ] { block_item_declaration } { statement_or_null } END [ COLON block_identifier ] 
+
+sequence_abbrev 
+	::= consecutive_repetition 
+
+sequence_actual_arg 
+	::= event_expression 
+	  | sequence_expr 
+
+sequence_declaration 
+	::= SEQUENCE sequence_identifier [ LPAREN [ sequence_port_list ] RPAREN ] SEMI { assertion_variable_declaration } sequence_expr [ SEMI ] ENDSEQUENCE [ COLON sequence_identifier ] 
+
+sequence_expr 
+	::= [ sequence_expr ] { cycle_delay_range sequence_expr } 
+	  | expression_or_dist [ boolean_abbrev ] 
+	  | sequence_instance [ sequence_abbrev ] 
+	  | LPAREN sequence_expr [ COMMA sequence_match_item { COMMA sequence_match_item } ] RPAREN [ sequence_abbrev ] 
+	  | sequence_expr AND sequence_expr 
+	  | sequence_expr INTERSECT sequence_expr 
+	  | sequence_expr OR sequence_expr 
+	  | FIRSTMATCH LPAREN sequence_expr [ COMMA sequence_match_item { COMMA sequence_match_item } ] RPAREN 
+	  | expression_or_dist THROUGHOUT sequence_expr 
+	  | sequence_expr WITHIN sequence_expr 
+	  | clocking_event sequence_expr 
+
+sequence_formal_type 
+	::= data_type_or_implicit 
+	  | SEQUENCE 
+	  | UNTYPED 
+
+sequence_identifier 
+	::= identifier 
+
+sequence_instance 
+	::= ps_or_hierarchical_sequence_identifier [ LPAREN sequence_list_of_arguments RPAREN ] 
+
+sequence_list_of_arguments 
+	::= { [ sequence_actual_arg ] COMMA } [ COMMA { DOT identifier LPAREN [ sequence_actual_arg ] RPAREN COMMA } ] 
+	  | DOT identifier LPAREN [ sequence_actual_arg ] RPAREN { COMMA DOT identifier LPAREN [ sequence_actual_arg ] RPAREN } 
+
+sequence_lvar_port_direction 
+	::= INPUT 
+	  | INOUT 
+	  | OUTPUT 
+
+sequence_match_item 
+	::= operator_assignment 
+	  | inc_or_dec_expression 
+	  | subroutine_call 
+
+sequence_method_call 
+	::= sequence_instance DOT method_identifier 
+
+sequence_port_item 
+	::= { attribute_instance } [ LOCAL [ sequence_lvar_port_direction ] ] sequence_formal_type formal_port_identifier { variable_dimension } [ ASSIGNOP sequence_actual_arg ] 
+
+sequence_port_list 
+	::= sequence_port_item { COMMA sequence_port_item } 
+
+set_covergroup_expression 
+	::= covergroup_expression 
+
+setup_timing_check 
+	::= TFSETUP LPAREN data_event COMMA reference_event COMMA timing_check_limit [ COMMA [ notifier ] ] RPAREN SEMI 
+
+setuphold_timing_check 
+	::= TFSETUPHOLD LPAREN reference_event COMMA data_event COMMA timing_check_limit COMMA timing_check_limit [ COMMA [ notifier ] [ COMMA [ timestamp_condition ] [ COMMA [ timecheck_condition ] [ COMMA [ delayed_reference ] [ COMMA [ delayed_data ] ] ] ] ] ] LPAREN SEMI 
+
+showcancelled_declaration 
+	::= SHOWCANCELLED list_of_path_outputs SEMI 
+	  | NOSHOWCANCELLED list_of_path_outputs SEMI 
+
+sign 
+	::= PLUS 
+	  | MINUS 
+
+signal_identifier 
+	::= identifier 
+
+signing 
+	::= SIGNED 
+	  | UNSIGNED 
+
+simple_immediate_assert_statement 
+	::= ASSERT LPAREN expression RPAREN action_block 
+
+simple_immediate_assertion_statement 
+	::= simple_immediate_assert_statement 
+	  | simple_immediate_assume_statement 
+	  | simple_immediate_cover_statement 
+
+simple_immediate_assume_statement 
+	::= ASSUME LPAREN expression RPAREN action_block 
+
+simple_immediate_cover_statement 
+	::= COVER LPAREN expression RPAREN statement_or_null 
+
+simple_path_declaration 
+	::= parallel_path_description ASSIGNOP path_delay_value 
+	  | full_path_description ASSIGNOP path_delay_value 
+
+simple_type 
+	::= integer_type 
+	  | non_integer_type 
+	  | ps_type_identifier 
+	  | ps_parameter_identifier 
+
+size 
+	::= unsigned_number 
+
+skew_timing_check 
+	::= TFSKEW LPAREN reference_event COMMA data_event COMMA timing_check_limit [ COMMA [ notifier ] ] RPAREN SEMI 
+
+slice_size 
+	::= simple_type 
+	  | constant_expression 
+
+solve_before_list 
+	::= constraint_primary { COMMA constraint_primary } 
+
+specify_block 
+	::= SPECIFY { specify_item } SPECIFY 
+
+specify_input_terminal_descriptor 
+	::= input_identifier [ LBRACKET constant_range_expression RBRACKET ] 
+
+specify_item 
+	::= specparam_declaration 
+	  | pulsestyle_declaration 
+	  | showcancelled_declaration 
+	  | path_declaration 
+	  | system_timing_check 
+
+specify_output_terminal_descriptor 
+	::= output_identifier [ LBRACKET constant_range_expression RBRACKET ] 
+
+specify_terminal_descriptor 
+	::= specify_input_terminal_descriptor 
+	  | specify_output_terminal_descriptor 
+
+specparam_assignment 
+	::= specparam_identifier ASSIGNOP constant_mintypmax_expression 
+	  | pulse_control_specparam 
+
+specparam_declaration 
+	::= SPECPARAM [ packed_dimension ] list_of_specparam_assignments SEMI 
+
+specparam_identifier 
+	::= identifier 
+
+start_edge_offset 
+	::= mintypmax_expression 
+
+state_dependent_path_declaration 
+	::= IF LPAREN module_path_expression RPAREN simple_path_declaration 
+	  | IF LPAREN module_path_expression RPAREN edge_sensitive_path_declaration 
+	  | IFNONE simple_path_declaration 
+
+statement 
+	::= [ block_identifier COLON ] { attribute_instance } statement_item 
+
+statement_item 
+	::= blocking_assignment SEMI 
+	  | nonblocking_assignment SEMI 
+	  | procedural_continuous_assignment SEMI 
+	  | case_statement 
+	  | conditional_statement 
+	  | inc_or_dec_expression SEMI 
+	  | subroutine_call_statement 
+	  | disable_statement 
+	  | event_trigger 
+	  | loop_statement 
+	  | jump_statement 
+	  | par_block 
+	  | procedural_timing_control_statement SEMI 
+	  | seq_block 
+	  | wait_statement 
+	  | procedural_assertion_statement 
+	  | clocking_drive SEMI 
+	  | randsequence_statement 
+	  | randcase_statement 
+	  | expect_property_statement 
+
+statement_or_null 
+	::= statement 
+	  | { attribute_instance } SEMI 
+
+stream_concatenation 
+	::= LBRACE stream_expression { COMMA stream_expression } RBRACE 
+
+stream_expression 
+	::= expression [ WITH LBRACKET array_range_expression RBRACKET ] 
+
+stream_operator 
+	::= GTGT 
+	  | LTLT 
+
+streaming_concatenation 
+	::= LBRACE stream_operator [ slice_size ] stream_concatenation RBRACE 
+
+strength0 
+	::= SUPPLY0 
+	  | STRONG0 
+	  | PULL0 
+	  | WEAK0 
+	  | HIGHZ0 
+
+strength1 
+	::= SUPPLY1 
+	  | STRONG1 
+	  | PULL1 
+	  | WEAK1 
+	  | HIGHZ1 
+
+struct_union 
+	::= STRUCT 
+	  | UNION [ TAGGED ] 
+
+struct_union_member 
+	::= { attribute_instance } [ random_qualifier ] data_type_or_void list_of_variable_decl_assignments SEMI 
+
+structure_pattern_key 
+	::= member_identifier 
+	  | assignment_pattern_key 
+
+subroutine_call 
+	::= tf_call 
+	  | system_tf_call 
+	  | method_call 
+	  | [ STD NAMEQUAL ] randomize_call 
+
+subroutine_call_statement 
+	::= subroutine_call SEMI 
+	  | VOID APOS LPAREN function_subroutine_call RPAREN SEMI 
+
+system_tf_call 
+	::= system_tf_identifier [ LPAREN list_of_arguments RPAREN ] 
+	  | system_tf_identifier LPAREN data_type [ COMMA expression ] RPAREN 
+
+system_timing_check 
+	::= setup_timing_check 
+	  | hold_timing_check 
+	  | setuphold_timing_check 
+	  | recovery_timing_check 
+	  | removal_timing_check 
+	  | recrem_timing_check 
+	  | skew_timing_check 
+	  | timeskew_timing_check 
+	  | fullskew_timing_check 
+	  | period_timing_check 
+	  | width_timing_check 
+	  | nochange_timing_check 
+
+t01_path_delay_expression 
+	::= path_delay_expression 
+
+t0x_path_delay_expression 
+	::= path_delay_expression 
+
+t0z_path_delay_expression 
+	::= path_delay_expression 
+
+t10_path_delay_expression 
+	::= path_delay_expression 
+
+t1x_path_delay_expression 
+	::= path_delay_expression 
+
+t1z_path_delay_expression 
+	::= path_delay_expression 
+
+t_path_delay_expression 
+	::= path_delay_expression 
+
+tagged_union_expression 
+	::= TAGGED member_identifier [ expression ] 
+
+task_body_declaration 
+	::= [ interface_identifier DOT 
+	  | class_scope ] task_identifier SEMI { tf_item_declaration } { statement_or_null } ENDTASK [ COLON task_identifier ] 
+	  | [ interface_identifier DOT 
+	  | class_scope ] task_identifier LPAREN [ tf_port_list ] RPAREN SEMI { block_item_declaration } { statement_or_null } ENDTASK [ COLON task_identifier ] 
+
+task_declaration 
+	::= TASK [ lifetime ] task_body_declaration 
+
+task_identifier 
+	::= identifier 
+
+task_prototype 
+	::= TASK task_identifier [ LPAREN [ tf_port_list ] RPAREN ] 
+
+terminal_identifier 
+	::= identifier 
+
+tf_call 
+	::= ps_or_hierarchical_tf_identifier { attribute_instance } [ LPAREN list_of_arguments RPAREN ] 
+
+tf_identifier 
+	::= identifier 
+
+tf_item_declaration 
+	::= block_item_declaration 
+	  | tf_port_declaration 
+
+tf_port_declaration 
+	::= { attribute_instance } tf_port_direction [ VAR ] data_type_or_implicit list_of_tf_variable_identifiers SEMI 
+
+tf_port_direction 
+	::= port_direction 
+	  | CONST REF 
+
+tf_port_item 
+	::= { attribute_instance } [ tf_port_direction ] [ VAR ] data_type_or_implicit [ port_identifier { variable_dimension } [ ASSIGNOP expression ] ] 
+
+tf_port_list 
+	::= tf_port_item { COMMA tf_port_item } 
+
+tfall_path_delay_expression 
+	::= path_delay_expression 
+
+threshold 
+	::= constant_expression 
+
+time_literal 
+	::= unsigned_number time_unit 
+	  | fixed_point_number time_unit 
+
+time_unit 
+	::= identifier 
+
+timecheck_condition 
+	::= mintypmax_expression 
+
+timeskew_timing_check 
+	::= TFTIMESKEW LPAREN reference_event COMMA data_event COMMA timing_check_limit [ COMMA [ notifier ] [ COMMA [ event_based_flag ] [ COMMA [ remain_active_flag ] ] ] ] 
+
+timestamp_condition 
+	::= mintypmax_expression 
+
+timeunits_declaration 
+	::= TIMEUNIT time_literal [ SLASH time_literal SEMI ] 
+	  | TIMEPRECISION time_literal SEMI 
+	  | TIMEUNIT time_literal SEMI TIMEPRECISION time_literal SEMI 
+	  | TIMEPRECISION time_literal SEMI TIMEUNIT time_literal SEMI 
+
+timing_check_condition 
+	::= scalar_timing_check_condition 
+	  | LPAREN scalar_timing_check_condition RPAREN 
+
+timing_check_event 
+	::= [ timing_check_event_control ] specify_terminal_descriptor [ TRIPLEAMP timing_check_condition ] 
+
+timing_check_event_control 
+	::= edge_identifier 
+	  | edge_control_specifier 
+
+timing_check_limit 
+	::= expression 
+
+trans_item 
+	::= covergroup_range_list 
+
+trans_list 
+	::= LPAREN trans_set RPAREN { COMMA LPAREN trans_set RPAREN } 
+
+trans_range_list 
+	::= trans_item 
+	  | trans_item LBRACKET STAR repeat_range RBRACKET 
+	  | trans_item LBRACKET ARROW repeat_range RBRACKET 
+	  | trans_item LBRACKET ASSIGNOP repeat_range RBRACKET 
+
+trans_set 
+	::= trans_range_list { EQARROW trans_range_list } 
+
+trise_path_delay_expression 
+	::= path_delay_expression 
+
+tx0_path_delay_expression 
+	::= path_delay_expression 
+
+tx1_path_delay_expression 
+	::= path_delay_expression 
+
+txz_path_delay_expression 
+	::= path_delay_expression 
+
+type_assignment 
+	::= type_identifier [ ASSIGNOP data_type ] 
+
+type_declaration 
+	::= TYPEDEF data_type type_identifier { variable_dimension } SEMI 
+	  | TYPEDEF interface_intance_identifier constant_bit_select DOT type_identifier type_identifier SEMI 
+	  | TYPEDEF [ ENUM 
+	  | STRUCT 
+	  | UNION 
+	  | CLASS 
+	  | INTERFACE CLASS ] type_identifier SEMI 
+
+type_identifier 
+	::= identifier 
+
+type_reference 
+	::= TYPE LPAREN expression RPAREN 
+	  | TYPE LPAREN data_type RPAREN 
+
+tz0_path_delay_expression 
+	::= path_delay_expression 
+
+tz1_path_delay_expression 
+	::= path_delay_expression 
+
+tz_path_delay_expression 
+	::= path_delay_expression 
+
+tzx_path_delay_expression 
+	::= path_delay_expression 
+
+udp_identifier 
+	::= identifier 
+
+udp_instance 
+	::= [ name_of_instance ] LPAREN output_terminal COMMA input_terminal { COMMA input_terminal } RPAREN 
+
+udp_instantiation 
+	::= udp_identifier [ drive_strength ] [ delay2 ] udp_instance { COMMA udp_instance } SEMI 
+
+unary_module_path_operator 
+	::= NOTOP 
+	  | TILDE AMP 
+	  | TILDE PIPE 
+	  | CARET TILDE 
+	  | TILDE CARET 
+	  | AMP 
+	  | PIPE 
+	  | TILDE 
+	  | CARET 
+
+unary_operator 
+	::= NOTOP 
+	  | TILDE AMP 
+	  | TILDE PIPE 
+	  | CARET TILDE 
+	  | TILDE CARET 
+	  | AMP 
+	  | PIPE 
+	  | TILDE 
+	  | CARET 
+
+unbased_unsized_literal 
+	::= APOS unsigned_number 
+
+unique_priority 
+	::= UNIQUE 
+	  | UNIQUE0 
+	  | PRIORITY 
+
+uniqueness_constraint 
+	::= UNIQUE { open_range_list } 
+
+unpacked_dimension 
+	::= LBRACKET constant_range RBRACKET 
+	  | LBRACKET constant_expression RBRACKET 
+
+unsized_dimension 
+	::= LBRACKET RBRACKET 
+
+value_range 
+	::= expression 
+	  | LBRACKET expression COLON expression RBRACKET 
+
+var_data_type 
+	::= data_type 
+	  | VAR data_type_or_implicit 
+
+variable_assignment 
+	::= variable_lvalue ASSIGNOP expression 
+
+variable_decl_assignment 
+	::= variable_identifier { variable_dimension } [ ASSIGNOP expression ] 
+	  | dynamic_array_variable_identifier unsized_dimension { variable_dimension } [ ASSIGNOP dynamic_array_new ] 
+	  | class_variable_identifier [ ASSIGNOP class_new ] 
+
+variable_dimension 
+	::= unsized_dimension 
+	  | unpacked_dimension 
+	  | associative_dimension 
+	  | queue_dimension 
+
+variable_identifier 
+	::= identifier 
+
+variable_identifier_list 
+	::= variable_identifier { COMMA variable_identifier } 
+
+variable_lvalue 
+	::= hierarchical_variable_identifier select 
+	  | LBRACE variable_lvalue { COMMA variable_lvalue } RBRACE 
+	  | [ assignment_pattern_expression_type ] assignment_pattern_variable_lvalue 
+	  | streaming_concatenation 
+
+variable_port_header 
+	::= [ port_direction ] variable_port_type 
+
+variable_port_type 
+	::= var_data_type 
+
+wait_statement 
+	::= WAIT LPAREN expression RPAREN statement_or_null 
+	  | WAIT FORK SEMI 
+	  | WAITORDER LPAREN hierarchical_identifier { COMMA hierarchical_identifier } RPAREN action_block 
+
+weight_specification 
+	::= integral_number 
+	  | ps_identifier 
+	  | LPAREN expression RPAREN 
+
+width_timing_check 
+	::= TFPERIOD LPAREN controlled_reference_event COMMA timing_check_limit COMMA threshold [ COMMA [ notifier ] ] RPAREN SEMI 
+
+with_covergroup_expression 
+	::= covergroup_expression 
+

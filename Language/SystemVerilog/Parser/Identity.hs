@@ -1,23 +1,31 @@
 
-module Language.SystemVerilog.Namespace
-  ( module Text.Parsec
+module Language.SystemVerilog.Parser.Identity
+  ( module Data.Functor.Identity
+  , module Text.Parsec
   , module Text.Parsec.Combinator
   , module Text.Parsec.Pos
   , module Language.SystemVerilog.Lexer
   , module Language.SystemVerilog.Syntax
   , (<|>), optional, many
-  , Parser
+  , Parser, Result
+  , runResult
   ) where
 
 import qualified Control.Applicative as A
-import Text.Parsec (Parsec, ParseError, token, parse, try, (<?>))
+import Data.Functor.Identity
+import Text.Parsec (ParsecT, ParseError, tokenPrim, runParserT, try, uncons, (<?>))
 import Text.Parsec.Combinator (sepBy, sepBy1, sepEndBy, between, many1, choice)
 import Text.Parsec.Pos
 
 import Language.SystemVerilog.Lexer
 import Language.SystemVerilog.Syntax
 
-type Parser = Parsec [Lexer Token] ()
+type Parser = ParsecT [Lexer Token] () Result
+
+type Result = Identity
+
+runResult :: Result a -> a
+runResult = runIdentity
 
 (<|>) :: Parser a -> Parser a -> Parser a
 x <|> y = try x A.<|> y

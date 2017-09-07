@@ -1,14 +1,17 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 module Language.SystemVerilog.Parser where
 
+import Control.Applicative ((<|>))
 import Data.Char
 import Data.Text (Text)
+import Prelude hiding ((>>))
 
-import Language.SystemVerilog.Namespace
+import Language.SystemVerilog.Parser.Grammar
 
 parseAST :: Text -> Either ParseError [AST]
-parseAST = parse (many1 ast) [] . lexer []
+parseAST = runResult . runParser (many1 ast) mempty . lexer mempty
 
 ast :: Parser AST
 ast
@@ -510,6 +513,7 @@ nonPortModuleItem
 
 parameterOverride :: Parser ParameterOverride
 parameterOverride = defparam *> listOfDefparamAssignments <* semi
+  <?> "parameter_override"
 
 bindDirective :: Parser BindDirective
 bindDirective
@@ -575,6 +579,7 @@ configRuleStatement
 
 defaultClause :: Parser ()
 defaultClause = default_
+  <?> "default_clause"
 
 instClause :: Parser InstClause
 instClause = instance_ *> instName
@@ -2317,7 +2322,7 @@ booleanAbbrev
 
 sequenceAbbrev :: Parser SequenceAbbrev
 sequenceAbbrev = consecutiveRepetition
-  <?> "consecutive_repetition"
+  <?> "sequence_abbrev"
 
 consecutiveRepetition :: Parser ConsecutiveRepetition
 consecutiveRepetition
@@ -2337,7 +2342,7 @@ nonConsecutiveRepetition = NonConsecutiveRepetition
 gotoRepetition :: Parser GotoRepetition
 gotoRepetition = GotoRepetition
   <$> between lbrack rbrack (arrow *> constOrRangeExpression)
-  <?> "non_consecutive_repetition"
+  <?> "goto_repetition"
 
 constOrRangeExpression :: Parser ConstOrRangeExpression
 constOrRangeExpression
@@ -3475,7 +3480,7 @@ parBlock = ParBlock
   <*> many statementOrNull
   <*> joinKeyword
   <*> optional (colon *> blockIdentifier)
-  <?> "seq_block"
+  <?> "par_block"
 
 joinKeyword :: Parser JoinKeyword
 joinKeyword
@@ -3626,6 +3631,7 @@ eventTrigger
       <$> (double_arrow *> optional delayOrEventControl)
       <*> hierarchicalEventIdentifier
       <*  semi
+  <?> "event_trigger"
 
 disableStatement :: Parser DisableStatement
 disableStatement
@@ -4112,6 +4118,7 @@ production = Production
   <*> optional (between lparen rparen tfPortList)
   <*> (colon *> sepBy1 rsRule pipe)
   <*  semi
+  <?> "production"
 
 rsRule :: Parser RsRule
 rsRule = RsRule
@@ -4308,7 +4315,7 @@ outputIdentifier
   =   OutputPortIdentifier_OutputIdentifier <$> outputPortIdentifier
   <|> InoutPortIdentifier_OutputIdentifier <$> inoutPortIdentifier
   <|> PortIdentifier_OutputIdentifier <$> interfaceIdentifier <*> (dot *> portIdentifier)
-  <?> "input_identifier"
+  <?> "output_identifier"
 
 
 -- | A.7.4 Specify path delays
@@ -4532,7 +4539,7 @@ removalTimingCheck = RemovalTimingCheck
   <*> (comma *> timingCheckLimit)
   <*> optional (comma *> optional notifier)
   <*  (rparen <* semi)
-  <?> "recovery_timing_check"
+  <?> "removal_timing_check"
 
 recremTimingCheck :: Parser RecremTimingCheck
 recremTimingCheck = RecremTimingCheck
@@ -4576,7 +4583,7 @@ fullskewTimingCheck = FullskewTimingCheck
   <*> optional (comma >> (,) <$> optional notifier
       <*> optional (comma >> (,) <$> optional eventBasedFlag
         <*> optional (comma >> optional remainActiveFlag)))
-  <?> "timeskew_timing_check"
+  <?> "fullskew_timing_check"
 
 periodTimingCheck :: Parser PeriodTimingCheck
 periodTimingCheck = PeriodTimingCheck
@@ -4593,7 +4600,7 @@ widthTimingCheck = WidthTimingCheck
   <*> (comma *> threshold)
   <*> optional (comma *> optional notifier)
   <*  (rparen <* semi)
-  <?> "period_timing_check"
+  <?> "width_timing_check"
 
 nochangeTimingCheck :: Parser NochangeTimingCheck
 nochangeTimingCheck = NochangeTimingCheck
@@ -5249,7 +5256,7 @@ cast :: Parser Cast
 cast = Cast
   <$> castingType
   <*> (apostrophe *> between lparen rparen expression)
-
+  <?> "cast"
 
 -- | A.8.5 Expression left-side values
 --
@@ -5638,7 +5645,7 @@ outputPortIdentifier :: Parser OutputPortIdentifier
 outputPortIdentifier = identifier <?> "output_port_identifier"
 
 packageIdentifier :: Parser OutputPortIdentifier
-packageIdentifier = identifier <?> "output_port_identifier"
+packageIdentifier = identifier <?> "package_identifier"
 
 packageScope :: Parser PackageScope
 packageScope = Just <$> packageIdentifier <* namequal <|> Nothing <$ unitscope <* namequal
@@ -5789,12 +5796,15 @@ filePathSpec = identifier <?> "file_path_spec"
 
 -- | Lexer
 --
-maybeToken :: (Token -> Maybe a) -> Parser a
-maybeToken test = token showT posT testT
+maybeToken :: Monoidal a => (Token -> Maybe a) -> Parser a
+maybeToken test = tokenPrim showT posT testT
   where
-  showT (L _      t) = map toUpper (drop 4 (show t))
-  posT  (L (l, c) _) = newPos [] l c
-  testT (L _      t) = test t
+  showT (L _ t) = map toUpper (drop 4 (show t))
+  testT (L _ t) = test t
+  posT _ (L (l, c) _) ts
+    = case runIdentity (uncons ts) of
+        Nothing -> newPos [] l c
+        Just (L (l', c') _, _) -> newPos [] l' c'
 ident = maybeToken q
   where q (Tok_Ident t) = Just t; q _ = Nothing
 xdigit = maybeToken q
