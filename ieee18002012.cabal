@@ -1,16 +1,15 @@
 
 name:                ieee18002012
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            IEEE 1800-2012 SystemVerilog
 -- description:         
 license:             BSD3
 license-file:        LICENSE
-author:              Anonymous Coward
-maintainer:          foo@bar.bra
+author:              Andreas Westerwick
+maintainer:          westerwick@pconas.de
 -- copyright:           
 category:            Language
 build-type:          Simple
-extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library

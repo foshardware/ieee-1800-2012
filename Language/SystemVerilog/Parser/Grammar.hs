@@ -63,6 +63,9 @@ data Grammar
   | Empty
   deriving (Eq, Show)
 
+instance Semigroup Grammar where
+  (<>) = mappend
+
 instance Monoid Grammar where
   mempty = Empty
   mappend Empty g = g
