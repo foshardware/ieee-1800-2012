@@ -140,7 +140,7 @@ happyRules p = unlines $
   , ""
   ] ++
   [ unwords ["\""++ map toLower x ++"\"", "{", "Tok_"++ take 1 x ++ map toLower (tail x), "}"]
-  | (x, y) <- Map.assocs $ rules p
+  | (x, _) <- Map.assocs $ rules p
   , x == map toUpper x
   ] ++
   [ ""
