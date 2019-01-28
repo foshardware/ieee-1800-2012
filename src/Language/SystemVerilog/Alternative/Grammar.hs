@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables, TupleSections #-}
 
-module Language.SystemVerilog.Parser.Grammar
+module Language.SystemVerilog.Alternative.Grammar
   ( module Data.Functor.Identity
   , module Text.Parsec
   , module Text.Parsec.Pos

@@ -1,5 +1,5 @@
 
-module Language.SystemVerilog.Parser.Identity
+module Language.SystemVerilog.Alternative.Identity
   ( module Data.Functor.Identity
   , module Text.Parsec
   , module Text.Parsec.Combinator

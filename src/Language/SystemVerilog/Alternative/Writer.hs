@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 
-module Language.SystemVerilog.Parser.Writer
+module Language.SystemVerilog.Alternative.Writer
   ( module Data.Functor.Identity
   , module Text.Parsec
   , module Text.Parsec.Pos

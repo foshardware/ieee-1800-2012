@@ -1,14 +1,14 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
-module Language.SystemVerilog.Parser where
+module Language.SystemVerilog.Alternative where
 
 import Control.Applicative ((<|>))
 import Data.Char
 import Data.Text (Text)
 import Prelude hiding ((>>))
 
-import Language.SystemVerilog.Parser.Grammar
+import Language.SystemVerilog.Alternative.Grammar
 
 parseAST :: Text -> Either ParseError [AST]
 parseAST = runResult . runParser (many1 ast) mempty . lexer mempty
