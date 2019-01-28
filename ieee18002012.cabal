@@ -16,6 +16,7 @@ library
   exposed-modules:    
     Language.SystemVerilog.Alternative
     Language.SystemVerilog.Lexer 
+    Language.SystemVerilog.Parser
     Language.SystemVerilog.Alternative.Identity
     Language.SystemVerilog.Alternative.Grammar
     Language.SystemVerilog.Alternative.Writer

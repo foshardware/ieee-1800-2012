@@ -13,6 +13,7 @@ module Language.SystemVerilog.Alternative.Grammar
   , runParser, runResult
   , grammar, rules
   , bnf, bnfRules
+  , happyRules
   , cppTypes
   , Monoidal(..)
   ) where
@@ -114,6 +115,62 @@ instance Monad Parser where
     y <- unParser (k x)
     ~(i, t) <- get
     y <$ put (mappend h i, t)
+
+
+-- | Print Happy
+--
+happyRules :: Parser a -> String
+happyRules p = unlines $
+  [ "{"
+  , "module Language.SystemVerilog.Parser where"
+  , ""
+  , "import Data.Bits"
+  , "import Data.List"
+  , "import qualified Data.Text as T"
+  , ""
+  , "import Language.SystemVerilog.Syntax"
+  , "import Language.SystemVerilog.Tokens"
+  , "}"
+  , ""
+  , "%name ast"
+  , "%tokentype { Token }"
+  , "%error { parseError }"
+  , ""
+  , "%token"
+  , ""
+  ] ++
+  [ unwords ["\""++ map toLower x ++"\"", "{", "Tok_"++ take 1 x ++ map toLower (tail x), "}"]
+  | (x, y) <- Map.assocs $ rules p
+  , x == map toUpper x
+  ] ++
+  [ ""
+  , "%%"
+  , ""
+  , ""
+  , "ast :: { AST }"
+  , ": { LibraryText_AST (LibraryText []) }"
+  , ""
+  , ""
+  , "sepBy1(p, s)"
+  , ": sepBy1(p, s) s p { $3 : $1 }"
+  , "| p { [$1] }"
+  , ""
+  , "many(p)"
+  , ": many(p) p { $2 : $1 }"
+  , "| { [] }"
+  , ""
+  , "opt(p)"
+  , ": p { Just $1 }"
+  , "|   { Nothing }"
+  , ""
+  , ""
+  , ""
+  , "{"
+  , "parseError :: [Token] -> a"
+  , "parseError a = case a of"
+  , "  []              -> error \"Parse error: no tokens left to parse.\""
+  , "}"
+  ]
 
 
 -- | Print BNF

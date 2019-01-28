@@ -14,12 +14,12 @@ type Pos = (Int, Int)
 
 data Token
     -- Keywords
-    = Tok_AcceptOn
+    = Tok_Accepton
     | Tok_Alias
     | Tok_Always
-    | Tok_AlwaysComb
-    | Tok_AlwaysFf
-    | Tok_AlwaysLatch
+    | Tok_Alwayscomb
+    | Tok_Alwaysff
+    | Tok_Alwayslatch
     | Tok_And
     | Tok_Assert
     | Tok_Assign
@@ -90,7 +90,7 @@ data Token
     | Tok_Extends
     | Tok_Extern
     | Tok_Final
-    | Tok_FirstMatch
+    | Tok_Firstmatch
     | Tok_For
     | Tok_Force
     | Tok_Foreach
@@ -106,8 +106,8 @@ data Token
     | Tok_If
     | Tok_Iff
     | Tok_Ifnone
-    | Tok_IgnoreBins
-    | Tok_IllegalBins
+    | Tok_Ignorebins
+    | Tok_Illegalbins
     | Tok_Implements
     | Tok_Implies
     | Tok_Import
@@ -124,8 +124,8 @@ data Token
     | Tok_Interface
     | Tok_Intersect
     | Tok_Join
-    | Tok_JoinAny
-    | Tok_JoinNone
+    | Tok_Joinany
+    | Tok_Joinnone
     | Tok_Large
     | Tok_Let
     | Tok_Liblist
@@ -167,8 +167,8 @@ data Token
     | Tok_Pull1
     | Tok_Pulldown
     | Tok_Pullup
-    | Tok_PulsestyleOndetect
-    | Tok_PulsestyleOnevent
+    | Tok_Pulsestyleondetect
+    | Tok_Pulsestyleonevent
     | Tok_Pure
     | Tok_Rand
     | Tok_Randc
@@ -179,7 +179,7 @@ data Token
     | Tok_Realtime
     | Tok_Ref
     | Tok_Reg
-    | Tok_RejectOn
+    | Tok_Rejecton
     | Tok_Release
     | Tok_Repeat
     | Tok_Restrict
@@ -189,11 +189,11 @@ data Token
     | Tok_Rtran
     | Tok_Rtranif0
     | Tok_Rtranif1
-    | Tok_SAlways
-    | Tok_SEventually
-    | Tok_SNexttime
-    | Tok_SUntil
-    | Tok_SUntilWith
+    | Tok_Salways
+    | Tok_Seventually
+    | Tok_Snexttime
+    | Tok_Suntil
+    | Tok_Suntilwith
     | Tok_Scalared
     | Tok_Sequence
     | Tok_Shortint
@@ -214,8 +214,8 @@ data Token
     | Tok_Super
     | Tok_Supply0
     | Tok_Supply1
-    | Tok_SyncAcceptOn
-    | Tok_SyncRejectOn
+    | Tok_Syncaccepton
+    | Tok_Syncrejecton
     | Tok_Table
     | Tok_Tagged
     | Tok_Task
@@ -241,7 +241,7 @@ data Token
     | Tok_Unique1
     | Tok_Unsigned
     | Tok_Until
-    | Tok_UntilWith
+    | Tok_Untilwith
     | Tok_Untyped
     | Tok_Use
     | Tok_Uwire
@@ -250,7 +250,7 @@ data Token
     | Tok_Virtual
     | Tok_Void
     | Tok_Wait
-    | Tok_WaitOrder
+    | Tok_Waitorder
     | Tok_Wand
     | Tok_Weak
     | Tok_Weak0
@@ -264,20 +264,20 @@ data Token
     | Tok_Xnor
     | Tok_Xor
 
-    | Tok_1Step
+    | Tok_1step
     | Tok_Sample
     | Tok_Option
-    | Tok_TypeOption
+    | Tok_Typeoption
     | Tok_Std
     | Tok_Randomize
 
     -- Punctuators
-    | Tok_LParen
-    | Tok_RParen
-    | Tok_LBracket
-    | Tok_RBracket
-    | Tok_LBrace
-    | Tok_RBrace
+    | Tok_Lparen
+    | Tok_Rparen
+    | Tok_Lbracket
+    | Tok_Rbracket
+    | Tok_Lbrace
+    | Tok_Rbrace
     | Tok_Colon
     | Tok_Semi
     | Tok_Comma
@@ -292,55 +292,55 @@ data Token
     | Tok_Slash
     | Tok_Percent
     | Tok_Amp
-    | Tok_TripleAmp
+    | Tok_Tripleamp
     | Tok_Pipe
     | Tok_Caret
     | Tok_Tilde
-    | Tok_AssignOp
+    | Tok_Assignop
     | Tok_At
     | Tok_Hash
     | Tok_Question
     | Tok_Coalesce
-    | Tok_NameQual
+    | Tok_Namequal
     | Tok_Doublestar
     | Tok_Doubleat
     | Tok_Doublehash
     | Tok_Increment
     | Tok_Decrement
-    | Tok_ImplicationOverlapped
+    | Tok_Implicationoverlapped
     | Tok_Implication
-    | Tok_FollowedByOverlapped
-    | Tok_FollowedBy
+    | Tok_Followedbyoverlapped
+    | Tok_Followedby
     | Tok_Arrow
-    | Tok_DoubleArrow
-    | Tok_EqArrow
+    | Tok_Doublearrow
+    | Tok_Eqarrow
     | Tok_Eq
-    | Tok_NotEq
+    | Tok_Noteq
     | Tok_Lt
-    | Tok_LtEq
+    | Tok_Lteq
     | Tok_Gt
-    | Tok_GtEq
-    | Tok_LtLt
-    | Tok_GtGt
-    | Tok_NotOp
-    | Tok_AndOp
-    | Tok_OrOp
-    | Tok_ShiftL
-    | Tok_ShiftR
-    | Tok_AssPlus
-    | Tok_AssMinus
-    | Tok_AssStar
-    | Tok_AssSlash
-    | Tok_AssPercent
-    | Tok_AssAmp
-    | Tok_AssPipe
-    | Tok_AssCaret
-    | Tok_AssShiftL
-    | Tok_AssShiftR
-    | Tok_AssShiftLL
-    | Tok_AssShiftRR
+    | Tok_Gteq
+    | Tok_Ltlt
+    | Tok_Gtgt
+    | Tok_Notop
+    | Tok_Andop
+    | Tok_Orop
+    | Tok_Shiftl
+    | Tok_Shiftr
+    | Tok_Assplus
+    | Tok_Assminus
+    | Tok_Assstar
+    | Tok_Assslash
+    | Tok_Asspercent
+    | Tok_Assamp
+    | Tok_Asspipe
+    | Tok_Asscaret
+    | Tok_Assshiftl
+    | Tok_Assshiftr
+    | Tok_Assshiftll
+    | Tok_Assshiftrr
     | Tok_Equivalent
-    | Tok_NotEquivalent
+    | Tok_Notequivalent
     | Tok_Dweq
     | Tok_Dwne
 
@@ -348,17 +348,17 @@ data Token
     | Tok_Ident Text
     | Tok_TaskFunction Text
 
-    | Tok_TfSetup
-    | Tok_TfSetuphold
-    | Tok_TfHold
-    | Tok_TfRecovery
-    | Tok_TfRemoval
-    | Tok_TfRecrem
-    | Tok_TfSkew
-    | Tok_TfTimeskew
-    | Tok_TfFullskew
-    | Tok_TfPeriod
-    | Tok_TfNochange
+    | Tok_Tfsetup
+    | Tok_Tfsetuphold
+    | Tok_Tfhold
+    | Tok_Tfrecovery
+    | Tok_Tfremoval
+    | Tok_Tfrecrem
+    | Tok_Tfskew
+    | Tok_Tftimeskew
+    | Tok_Tffullskew
+    | Tok_Tfperiod
+    | Tok_Tfnochange
 
     -- Literals
     | Tok_StringLit Text

@@ -6,4 +6,4 @@ import Language.SystemVerilog.Alternative.Grammar
 
 
 main :: IO ()
-main = putStrLn $ bnfRules ast
+main = writeFile "src/Language/SystemVerilog/Parser.y" $ happyRules ast

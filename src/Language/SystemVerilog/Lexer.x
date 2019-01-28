@@ -52,12 +52,12 @@ $white+       ;
 @preprocessor ;
 
 -- Keywords
-accept_on     { constTok Tok_AcceptOn      }
+accept_on     { constTok Tok_Accepton      }
 alias         { constTok Tok_Alias         }
 always        { constTok Tok_Always        }
-always_comb   { constTok Tok_AlwaysComb    }
-always_ff     { constTok Tok_AlwaysFf      }
-always_latch  { constTok Tok_AlwaysLatch   }
+always_comb   { constTok Tok_Alwayscomb    }
+always_ff     { constTok Tok_Alwaysff      }
+always_latch  { constTok Tok_Alwayslatch   }
 and           { constTok Tok_And           }
 assert        { constTok Tok_Assert        }
 assign        { constTok Tok_Assign        }
@@ -127,7 +127,7 @@ export        { constTok Tok_Export        }
 extends       { constTok Tok_Extends       }
 extern        { constTok Tok_Extern        }
 final         { constTok Tok_Final         }
-first_match   { constTok Tok_FirstMatch    }
+first_match   { constTok Tok_Firstmatch    }
 for           { constTok Tok_For           }
 force         { constTok Tok_Force         }
 foreach       { constTok Tok_Foreach       }
@@ -143,8 +143,8 @@ highz1        { constTok Tok_Highz1        }
 if            { constTok Tok_If            }
 iff           { constTok Tok_Iff           }
 ifnone        { constTok Tok_Ifnone        }
-ignore_bins   { constTok Tok_IgnoreBins    }
-illegal_bins  { constTok Tok_IllegalBins   }
+ignore_bins   { constTok Tok_Ignorebins    }
+illegal_bins  { constTok Tok_Illegalbins   }
 implements    { constTok Tok_Implements    }
 implies       { constTok Tok_Implies       }
 import        { constTok Tok_Import        }
@@ -161,8 +161,8 @@ interconnect  { constTok Tok_Interconnect  }
 interface     { constTok Tok_Interface     }
 intersect     { constTok Tok_Intersect     }
 join          { constTok Tok_Join          }
-join_any      { constTok Tok_JoinAny       }
-join_none     { constTok Tok_JoinNone      }
+join_any      { constTok Tok_Joinany       }
+join_none     { constTok Tok_Joinnone      }
 large         { constTok Tok_Large         }
 let           { constTok Tok_Let           }
 liblist       { constTok Tok_Liblist       }
@@ -204,8 +204,8 @@ pull0         { constTok Tok_Pull0         }
 pull1         { constTok Tok_Pull1         }
 pulldown      { constTok Tok_Pulldown      }
 pullup        { constTok Tok_Pullup        }
-pulsestyle_ondetect  { constTok Tok_PulsestyleOndetect }
-pulsestyle_onevent   { constTok Tok_PulsestyleOnevent  }
+pulsestyle_ondetect  { constTok Tok_Pulsestyleondetect }
+pulsestyle_onevent   { constTok Tok_Pulsestyleonevent  }
 pure          { constTok Tok_Pure          }
 rand          { constTok Tok_Rand          }
 randc         { constTok Tok_Randc         }
@@ -216,7 +216,7 @@ real          { constTok Tok_Real          }
 realtime      { constTok Tok_Realtime      }
 ref           { constTok Tok_Ref           }
 reg           { constTok Tok_Reg           }
-reject_on     { constTok Tok_RejectOn      }
+reject_on     { constTok Tok_Rejecton      }
 release       { constTok Tok_Release       }
 repeat        { constTok Tok_Repeat        }
 restrict      { constTok Tok_Restrict      }
@@ -226,11 +226,11 @@ rpmos         { constTok Tok_Rpmos         }
 rtran         { constTok Tok_Rtran         }
 rtranif0      { constTok Tok_Rtranif0      }
 rtranif1      { constTok Tok_Rtranif1      }
-s_always      { constTok Tok_SAlways       }
-s_eventually  { constTok Tok_SEventually   }
-s_nexttime    { constTok Tok_SNexttime     }
-s_until       { constTok Tok_SUntil        }
-s_until_with  { constTok Tok_SUntilWith    }
+s_always      { constTok Tok_Salways       }
+s_eventually  { constTok Tok_Seventually   }
+s_nexttime    { constTok Tok_Snexttime     }
+s_until       { constTok Tok_Suntil        }
+s_until_with  { constTok Tok_Suntilwith    }
 scalared      { constTok Tok_Scalared      }
 sequence      { constTok Tok_Sequence      }
 shortint      { constTok Tok_Shortint      }
@@ -251,8 +251,8 @@ struct        { constTok Tok_Struct        }
 super         { constTok Tok_Super         }
 supply0       { constTok Tok_Supply0       }
 supply1       { constTok Tok_Supply1       }
-sync_accept_on   { constTok Tok_SyncAcceptOn  }
-sync_reject_on   { constTok Tok_SyncAcceptOn  }
+sync_accept_on   { constTok Tok_Syncaccepton  }
+sync_reject_on   { constTok Tok_Syncaccepton  }
 table         { constTok Tok_Table         }
 tagged        { constTok Tok_Tagged        }
 task          { constTok Tok_Task          }
@@ -277,7 +277,7 @@ unique        { constTok Tok_Unique        }
 unique0       { constTok Tok_Unique0       }
 unsigned      { constTok Tok_Unsigned      }
 until         { constTok Tok_Until         }
-until_with    { constTok Tok_UntilWith     }
+until_with    { constTok Tok_Untilwith     }
 untyped       { constTok Tok_Untyped       }
 use           { constTok Tok_Use           }
 uwire         { constTok Tok_Uwire         }
@@ -286,7 +286,7 @@ vectored      { constTok Tok_Vectored      }
 void          { constTok Tok_Void          }
 virtual       { constTok Tok_Virtual       }
 wait          { constTok Tok_Wait          }
-wait_order    { constTok Tok_WaitOrder     }
+wait_order    { constTok Tok_Waitorder     }
 wand          { constTok Tok_Wand          }
 weak          { constTok Tok_Weak          }
 weak0         { constTok Tok_Weak0         }
@@ -300,20 +300,20 @@ wor           { constTok Tok_Wor           }
 xnor          { constTok Tok_Xnor          }
 xor           { constTok Tok_Xor           }
 
-1step         { constTok Tok_1Step         }
+1step         { constTok Tok_1step         }
 sample        { constTok Tok_Sample        }
 option        { constTok Tok_Option        }
-type_option   { constTok Tok_TypeOption    }
+type_option   { constTok Tok_Typeoption    }
 std           { constTok Tok_Std           }
 randomize     { constTok Tok_Randomize     }
 
 -- Punctuators
-\( { constTok Tok_LParen   }
-\) { constTok Tok_RParen   }
-\[ { constTok Tok_LBracket }
-\] { constTok Tok_RBracket }
-\{ { constTok Tok_LBrace   }
-\} { constTok Tok_RBrace   }
+\( { constTok Tok_Lparen   }
+\) { constTok Tok_Rparen   }
+\[ { constTok Tok_Lbracket }
+\] { constTok Tok_Rbracket }
+\{ { constTok Tok_Lbrace   }
+\} { constTok Tok_Rbrace   }
 \: { constTok Tok_Colon    }
 \; { constTok Tok_Semi     }
 \, { constTok Tok_Comma    }
@@ -330,53 +330,53 @@ randomize     { constTok Tok_Randomize     }
 \&     { constTok Tok_Amp        }
 \|     { constTok Tok_Pipe       }
 \^     { constTok Tok_Caret      }
-\!     { constTok Tok_NotOp      }
+\!     { constTok Tok_Notop      }
 \~     { constTok Tok_Tilde      }
 \=     { constTok Tok_Assign     }
 \@     { constTok Tok_At         }
 \#     { constTok Tok_Hash       }
 \?     { constTok Tok_Question   }
 \?\?   { constTok Tok_Coalesce   }
-\:\:   { constTok Tok_NameQual   }
+\:\:   { constTok Tok_Namequal   }
 \@\@   { constTok Tok_Doubleat   }
 \*\*   { constTok Tok_Doublestar }
 \#\#   { constTok Tok_Doublehash }
 \+\+   { constTok Tok_Increment  }
 \-\-   { constTok Tok_Decrement  }
-\&\&   { constTok Tok_AndOp      }
-\|\|   { constTok Tok_OrOp       }
+\&\&   { constTok Tok_Andop      }
+\|\|   { constTok Tok_Orop       }
 \-\>   { constTok Tok_Arrow      }
-\=\>   { constTok Tok_EqArrow    }
+\=\>   { constTok Tok_Eqarrow    }
 \:\=   { constTok Tok_Dweq       }
 \:\/   { constTok Tok_Dwne       }
 \=\=   { constTok Tok_Eq         }
-\!\=   { constTok Tok_NotEq      }
+\!\=   { constTok Tok_Noteq      }
 \<     { constTok Tok_Lt         }
-\<\=   { constTok Tok_LtEq       }
+\<\=   { constTok Tok_Lteq       }
 \>     { constTok Tok_Gt         }
-\>\=   { constTok Tok_GtEq       }
-\<\<   { constTok Tok_LtLt       }
-\>\>   { constTok Tok_GtGt       }
-\+\=   { constTok Tok_AssPlus    }
-\-\=   { constTok Tok_AssMinus   }
-\*\=   { constTok Tok_AssStar    }
-\/\=   { constTok Tok_AssSlash   }
-\%\=   { constTok Tok_AssPercent }
-\&\=   { constTok Tok_AssAmp     }
-\|\=   { constTok Tok_AssPipe    }
-\^\=   { constTok Tok_AssCaret   }
+\>\=   { constTok Tok_Gteq       }
+\<\<   { constTok Tok_Ltlt       }
+\>\>   { constTok Tok_Gtgt       }
+\+\=   { constTok Tok_Assplus    }
+\-\=   { constTok Tok_Assminus   }
+\*\=   { constTok Tok_Assstar    }
+\/\=   { constTok Tok_Assslash   }
+\%\=   { constTok Tok_Asspercent }
+\&\=   { constTok Tok_Assamp     }
+\|\=   { constTok Tok_Asspipe    }
+\^\=   { constTok Tok_Asscaret   }
 \=\=\= { constTok Tok_Equivalent }
-\!\=\= { constTok Tok_NotEquivalent }
-\&\&\& { constTok Tok_TripleAmp   }
-\-\>\> { constTok Tok_DoubleArrow }
-\<\<\= { constTok Tok_AssShiftL   }
-\>\>\= { constTok Tok_AssShiftR   }
-\|\-\> { constTok Tok_ImplicationOverlapped }
+\!\=\= { constTok Tok_Notequivalent }
+\&\&\& { constTok Tok_Tripleamp   }
+\-\>\> { constTok Tok_Doublearrow }
+\<\<\= { constTok Tok_Assshiftl   }
+\>\>\= { constTok Tok_Assshiftr   }
+\|\-\> { constTok Tok_Implicationoverlapped }
 \|\=\> { constTok Tok_Implication           }
-\#\-\# { constTok Tok_FollowedByOverlapped  }
-\#\=\# { constTok Tok_FollowedBy            }
-\<\<\<\= { constTok Tok_AssShiftLL  }
-\>\>\>\= { constTok Tok_AssShiftRR  }
+\#\-\# { constTok Tok_Followedbyoverlapped  }
+\#\=\# { constTok Tok_Followedby            }
+\<\<\<\= { constTok Tok_Assshiftll  }
+\>\>\>\= { constTok Tok_Assshiftrr  }
 
 
 -- Numeric literals
@@ -399,17 +399,17 @@ $hex_digit      [\_$hex_digit]*      { textTok Tok_HexValue        }
 \$unit      { constTok Tok_Unitscope }
 \$pathpulse { constTok Tok_Pathpulse }
 
-\$setup     { constTok Tok_TfSetup     }
-\$setuphold { constTok Tok_TfSetuphold }
-\$hold      { constTok Tok_TfHold      }
-\$recovery  { constTok Tok_TfRecovery  }
-\$removal   { constTok Tok_TfRemoval   }
-\$recrem    { constTok Tok_TfRecrem    }
-\$skew      { constTok Tok_TfSkew      }
-\$timeskew  { constTok Tok_TfTimeskew  }
-\$fullskew  { constTok Tok_TfFullskew  }
-\$period    { constTok Tok_TfPeriod    }
-\$nochange  { constTok Tok_TfNochange  }
+\$setup     { constTok Tok_Tfsetup     }
+\$setuphold { constTok Tok_Tfsetuphold }
+\$hold      { constTok Tok_Tfhold      }
+\$recovery  { constTok Tok_Tfrecovery  }
+\$removal   { constTok Tok_Tfremoval   }
+\$recrem    { constTok Tok_Tfrecrem    }
+\$skew      { constTok Tok_Tfskew      }
+\$timeskew  { constTok Tok_Tftimeskew  }
+\$fullskew  { constTok Tok_Tffullskew  }
+\$period    { constTok Tok_Tfperiod    }
+\$nochange  { constTok Tok_Tfnochange  }
 
 $exp        { constTok Tok_Exp       }
 
