@@ -152,7 +152,7 @@ stringLit { Tok_StrinLit _ }
 "genvar" { Tok_Genvar }
 "gt" { Tok_Gt }
 "gteq" { Tok_Gteq }
-"gtgt" { Tok_Gtgt }
+">>" { Tok_Gtgt }
 "#" { Tok_Hash }
 "highz0" { Tok_Highz0 }
 "highz1" { Tok_Highz1 }
@@ -183,7 +183,7 @@ stringLit { Tok_StrinLit _ }
 "joinany" { Tok_Joinany }
 "joinnone" { Tok_Joinnone }
 "large" { Tok_Large }
-"lbrace" { Tok_Lbrace }
+"{" { Tok_Lbrace }
 "[" { Tok_Lbracket }
 "let" { Tok_Let }
 "liblist" { Tok_Liblist }
@@ -195,7 +195,7 @@ stringLit { Tok_StrinLit _ }
 "(" { Tok_Lparen }
 "lt" { Tok_Lt }
 "lteq" { Tok_Lteq }
-"ltlt" { Tok_Ltlt }
+"<<" { Tok_Ltlt }
 "macromodule" { Tok_Macromodule }
 "matches" { Tok_Matches }
 "medium" { Tok_Medium }
@@ -249,7 +249,7 @@ stringLit { Tok_StrinLit _ }
 "randcase" { Tok_Randcase }
 "randomize" { Tok_Randomize }
 "randsequence" { Tok_Randsequence }
-"rbrace" { Tok_Rbrace }
+"}" { Tok_Rbrace }
 "]" { Tok_Rbracket }
 "rcmos" { Tok_Rcmos }
 "real" { Tok_Real }
@@ -261,7 +261,7 @@ stringLit { Tok_StrinLit _ }
 "repeat" { Tok_Repeat }
 "restrict" { Tok_Restrict }
 "rnmos" { Tok_Rnmos }
-"rootscope" { Tok_Rootscope }
+"$root" { Tok_Rootscope }
 ")" { Tok_Rparen }
 "rpmos" { Tok_Rpmos }
 "rtran" { Tok_Rtran }
@@ -608,6 +608,14 @@ PackageImportItem :: { PackageImportItem }
 --   A.2.2.1 Net and variable types
 --
 
+CastingType :: { CastingType }
+: SimpleType { SimpleType_CastingType $1 }
+| ConstantPrimary { ConstantPrimary_CastingType $1 }
+| Signing { Signing_CastingType $1 }
+| "string" { StringCastingType }
+| "const" { ConstCastingType }
+
+
 DataType :: { DataType }
 : IntegerVectorType opt(Signing) many(PackedDimension)
   { IntegerVectorType_DataType $1 $2 $3 }
@@ -804,6 +812,36 @@ QueueDimension :: { QueueDimension }
 : "[" "$" opt(second(":", ConstantExpression)) "]" { $3 }
 
 
+
+-- | A.2.10 Assertion declarations
+--
+
+
+SequenceMethodCall :: { SequenceMethodCall }
+: SequenceInstance "." MethodIdentifier { SequenceMethodCall $1 $3 }
+
+
+LetExpression :: { LetExpression }
+: opt(PackageScope) LetIdentifier opt(between("(", ")", opt(LetListOfArguments)))
+  { LetExpression $1 $2 $3 }
+
+
+LetListOfArguments :: { LetListOfArguments }
+: sepBy(opt(LetActualArg), ",")
+  opt(second(",", sepBy(tuple(second(".", Identifier), between("(", ")", opt(LetActualArg))), ",")))
+  { LetListOfArguments $1 $2 }
+| sepBy1(tuple(second(".", Identifier), between("(", ")", opt(LetActualArg))), ",")
+  { LetListOfArguments [] (Just $1) }
+
+LetActualArg :: { LetActualArg }
+: Expression { $1 }
+
+
+-- | A.2.11 Covergroup declarations
+--
+
+
+
 -- | A.4 Instantiations
 --
 --   A.4.1 Instantiation
@@ -828,6 +866,110 @@ NamedParameterAssignment :: { NamedParameterAssignment }
 : "." ParameterIdentifier "(" opt(ParamExpression) ")" { ($2, $4) }
 
 
+OpenRangeList :: { OpenRangeList }
+: sepBy1(OpenValueRange, ",") { $1 }
+
+OpenValueRange :: { OpenValueRange }
+: ValueRange { $1 }
+
+
+
+-- | A.6.7.1 Patterns
+--
+
+AssignmentPattern :: { AssignmentPattern }
+: "'" "{" sepBy1(Expression, ",") "}"
+  { ExpressionList_AssignmentPattern $3 }
+| "'" "{" sepBy1(tuple(StructurePatternKey, second(":", Expression)), ",") "}"
+  { ExpressionList_AssignmentPattern $3 }
+| "'" "{" sepBy1(tuple(ArrayPatternKey, second(":", Expression)), ",") "}"
+  { ExpressionList_AssignmentPattern $3 }
+| "'" "{" ConstantExpression "{" sepBy1(Expression, ",") "}" "}"
+  { ConstantExpression_AssignmentPattern $3 $5 }
+
+
+StructurePatternKey :: { StructurePatternKey }
+: MemberIdentifier { Left $1 }
+| AssignmentPatternKey { Right $1 }
+
+ArrayPatternKey :: { ArrayPatternKey }
+: ConstantExpression { Left $1 }
+| AssignmentPatternKey { Right $1 }
+
+AssignmentPatternKey :: { AssignmentPatternKey }
+: SimpleType { Just $1 }
+| "default" { Nothing }
+
+
+AssignmentPatternExpression :: { AssignmentPatternExpression }
+: opt(AssignmentPatternExpressionType) AssignmentPattern
+  { AssignmentPatternExpression $1 $2 }
+
+
+AssignmentPatternExpressionType :: { AssignmentPatternExpressionType }
+: PsTypeIdentifier { PsTypeIdentifier_AssignmentPatternExpressionType $1 }
+| PsParameterIdentifier { PsParameterIdentifier_AssignmentPatternExpressionType $1 }
+| IntegerAtomType { IntegerAtomType_AssignmentPatternExpressionType $1 }
+| TypeReference { TypeReference_AssignmentPatternExpressionType $1 }
+
+
+ConstantAssignmentPatternExpression :: { ConstantAssignmentPatternExpression }
+: AssignmentPatternExpression { $1 }
+
+-- AssignmentPatternNetLvalue :: { AssignmentPatternNetLvalue }
+-- : "'" "[" sepBy1(NetLvalue, ",") "]" { $3 }
+
+-- AssignmentPatternVariableLvalue :: { AssignmentPatternNetLvalue }
+-- : "'" "[" sepBy1(VariableLvalue, ",") "]" { $3 }
+
+
+-- | A.8 Expressions
+--
+--   A.8.1 Concatenations
+--
+
+Concatenation :: { Concatenation }
+: "{" sepBy1(Expression, ",") "}"
+  { $2 }
+
+MultipleConcatenation :: { MultipleConcatenation }
+: "{" Expression Concatenation "}"
+  { MultipleConcatenation $2 $3 }
+
+
+StreamingConcatenation :: { StreamingConcatenation }
+: "{" StreamOperator opt(SliceSize) StreamConcatenation "}"
+  { StreamConcatenation $2 $3 $4 }
+
+
+StreamOperator :: { StreamOperator }
+: ">>" { Downstream }
+| "<<" { Upstream }
+
+
+SliceSize :: { SliceSize }
+: SimpleType { SimpleType_SliceSize $1 }
+| ConstantExpression { ConstantExpression_SliceSize $1 }
+
+
+StreamConcatenation :: { StreamConcatenation }
+: "{" sepBy1(StreamExpression, ",") "}" { $2 }
+
+StreamExpression :: { StreamExpression }
+: Expression opt(second("with", between("[", "]", ArrayRangeExpression)))
+  { StreamExpression $1 $2 }
+
+ArrayRangeExpression :: { ArrayRangeExpression }
+: Expression ":" Expression { ArrayRangeZ $1 $3 }
+| Expression "+" ":" Expression { ArrayRangeP $1 $3 }
+| Expression "-" ":" Expression { ArrayRangeM $1 $3 }
+| Expression { Expression_ArrayRangeExpression $1 }
+
+
+EmptyQueue :: { EmptyQueue }
+: "[" "]" { EmptyQueue }
+
+
 
 -- | A.8.2 Subroutine calls
 --
@@ -845,6 +987,11 @@ ListOfArguments :: { ListOfArguments }
 
 -- | A.8.3 Expressions
 --
+
+ConditionalExpression :: { ConditionalExpression }
+: CondPredicate "?" many(AttributeInstance) Expression ":" Expression
+  { ConditionalExpression $1 $3 $4 $6 }
+
 
 ConstantExpression :: { ConstantExpression }
 : ConstantPrimary { ConstantPrimary_ConstantExpression $1 }
@@ -868,6 +1015,10 @@ ParamExpression :: { ParamExpression }
 | "$" { DollarParamExpression }
 
 
+ConstantRange :: { ConstantRange }
+: ConstantExpression ":" ConstantExpression { ($1, $3) }
+
+
 Expression :: { Expression }
 : Primary { Primary_Expression $1 }
 | UnaryOperator many(AttributeInstance) Primary { UnaryExpression $1 $2 $3 }
@@ -877,6 +1028,35 @@ Expression :: { Expression }
 | ConditionalExpression { ConditionalExpression_Expression $1 }
 | InsideExpression { InsideExpression_Expression $1 }
 | TaggedUnionExpression { TaggedUnionExpression_Expression $1 }
+
+
+TaggedUnionExpression :: { TaggedUnionExpression }
+: "tagged" MemberIdentifier opt(Expression)
+  { TaggedUnionExpression $2 $3 }
+
+InsideExpression :: { InsideExpression }
+: Expression "inside" "[" OpenRangeList "]"
+  { InsideExpression $1 $4 }
+
+
+ValueRange :: { ValueRange }
+: Expression { Left $1 }
+| "[" Expression ":" Expression "]" { Right ($2, $4) }
+
+
+MintypmaxExpression :: { MintypmaxExpression }
+: Expression ":" Expression ":" Expression { Right ($1, $3, $5) }
+| Expression { Left $1 }
+
+
+PartSelectRange :: { PartSelectRange }
+: ConstantRange { Left $1 }
+| IndexedRange { Right $1 }
+
+IndexedRange :: { IndexedRange }
+: Expression "+" ":" ConstantExpression { PlusIndexedRange $1 $4 }
+| Expression "-" ":" ConstantExpression { MinusIndexedRange $1 $4 }
+
 
 
 -- | A.8.4 Primaries
@@ -891,7 +1071,7 @@ Primary :: { Primary }
   { Concatenation_Primary $1 $2 }
 | MultipleConcatenation opt(between("[", "]", RangeExpression))
   { MultipleConcatenation_Primary $1 $2 }
-| FunctionSubroutineCall { FunctionSubroutineCall_Primary $1 }
+-- | FunctionSubroutineCall { FunctionSubroutineCall_Primary $1 }
 | LetExpression { LetExpression_Primary $1 }
 | "(" MintypmaxExpression ")" { MintypmaxExpression_Primary $2 }
 | Cast { Cast_Primary $1 }
@@ -913,12 +1093,42 @@ RangeExpression :: { RangeExpression }
 | PartSelectRange { Right $1 }
 
 
+PrimaryLiteral :: { PrimaryLiteral }
+: Number { Number_PrimaryLiteral $1 }
+| TimeLiteral { TimeLiteral_PrimaryLiteral $1 }
+| UnbasedUnsizedLiteral { UnbasedUnsizedLiteral $1 }
+| StringLiteral { StringLiteral_PrimaryLiteral $1 }
+
+
 TimeLiteral :: { TimeLiteral }
 : UnsignedNumber TimeUnit { UnsignedTimeLiteral $1 $2 }
 | FixedPointNumber TimeUnit { FixedPointTimeLiteral $1 $2 }
 
 TimeUnit :: { TimeUnit }
 : Identifier { $1 }
+
+
+BitSelect :: { BitSelect }
+: many(between("[", "]", Expression)) { $1 }
+
+Select :: { Select }
+: opt(tuple(many(tuple(second(".", MemberIdentifier), BitSelect)), second(".", MemberIdentifier)))
+  BitSelect opt(between("[", "]", PartSelectRange))
+  { Select $1 $2 $3 }
+
+
+ConstantBitSelect :: { ConstantBitSelect }
+: many(between("[", "]", ConstantExpression)) { $1 }
+
+
+Cast :: { Cast }
+: CastingType "'" "(" Expression ")"
+  { Cast $1 $4 }
+
+
+
+-- | A.8.5 Expression left-side values
+--
 
 
 -- | A.8.6 Operators
@@ -1015,6 +1225,13 @@ HexBase :: { HexBase }
 : hexBase { $1 }
 
 
+-- | A.8.8 Strings
+--
+
+StringLiteral :: { StringLiteral }
+: stringLit { stringLiteral $1 }
+
+
 
 -- | A.9 General
 -- 
@@ -1065,6 +1282,15 @@ CovergroupIdentifier :: { CovergroupIdentifier }
 
 PackageIdentifier :: { PackageIdentifier }
 : Identifier { $1 }
+
+MemberIdentifier :: { MemberIdentifier }
+: Identifier { $1 }
+
+
+HierarchicalIdentifier :: { HierarchicalIdentifier }
+: opt(second("$root", "."))
+  sepBy(tuple(Identifier, ConstantBitSelect), ".") Identifier
+  { HierarchicalIdentifier $1 $2 $3 }
 
 
 PackageScope :: { PackageScope }
@@ -1137,6 +1363,10 @@ third(a, b, p)
 identifier :: Token -> Identifier
 identifier (Tok_Ident s) = s
 identifier _ = mempty
+
+stringLiteral :: Token -> Identifier
+stringLiteral (Tok_StringLit s) = s
+stringLiteral _ = mempty
 
 
 parseError :: [Token] -> a
