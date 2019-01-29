@@ -41,7 +41,7 @@ stringLit { Tok_StrinLit _ }
 "alwayslatch" { Tok_Alwayslatch }
 "&" { Tok_Amp }
 "and" { Tok_And }
-"andop" { Tok_Andop }
+"&&" { Tok_Andop }
 "'" { Tok_Apos }
 "arrow" { Tok_Arrow }
 "asscaret" { Tok_Asscaret }
@@ -128,9 +128,9 @@ stringLit { Tok_StrinLit _ }
 "endtable" { Tok_Endtable }
 "endtask" { Tok_Endtask }
 "enum" { Tok_Enum }
-"eq" { Tok_Eq }
-"eqarrow" { Tok_Eqarrow }
-"equivalent" { Tok_Equivalent }
+"==" { Tok_Eq }
+"=>" { Tok_Eqarrow }
+"===" { Tok_Equivalent }
 "event" { Tok_Event }
 "eventually" { Tok_Eventually }
 "exp" { Tok_Exp }
@@ -212,21 +212,21 @@ stringLit { Tok_StrinLit _ }
 "nor" { Tok_Nor }
 "noshowcancelled" { Tok_Noshowcancelled }
 "not" { Tok_Not }
-"noteq" { Tok_Noteq }
-"notequivalent" { Tok_Notequivalent }
+"!=" { Tok_Noteq }
+"!==" { Tok_Notequivalent }
 "notif0" { Tok_Notif0 }
 "notif1" { Tok_Notif1 }
 "!" { Tok_Notop }
 "null" { Tok_Null }
 "option" { Tok_Option }
 "or" { Tok_Or }
-"orop" { Tok_Orop }
+"||" { Tok_Orop }
 "output" { Tok_Output }
 "package" { Tok_Package }
 "packed" { Tok_Packed }
 "parameter" { Tok_Parameter }
 "pathpulse" { Tok_Pathpulse }
-"percent" { Tok_Percent }
+"%" { Tok_Percent }
 "|" { Tok_Pipe }
 "+" { Tok_Plus }
 "pmos" { Tok_Pmos }
@@ -1146,6 +1146,25 @@ UnaryOperator :: { UnaryOperator }
 | "^" { TildeCaret }
 
 
+BinaryOperator :: { BinaryOperator }
+: "+" { PlusBin }
+| "-" { MinusBin }
+| "*" { StarBin }
+| "/" { SlashBin }
+| "%" { PercentBin }
+| "==" { EqualsBin }
+| "!=" { NotEqualsBin }
+| "===" { EquivalentBin }
+| "!==" { NotEquivalentBin }
+| "&&" { AndBin }
+| "||" { OrBin }
+| "&" { AmpBin }
+| "|" { PipeBin }
+| "^" "~" { CaretTildeBin }
+| "~" "^" { TildeCaretBin }
+| "^" { CaretBin }
+
+
 -- | A.8.7 Numbers
 --
 
@@ -1286,11 +1305,33 @@ PackageIdentifier :: { PackageIdentifier }
 MemberIdentifier :: { MemberIdentifier }
 : Identifier { $1 }
 
+ParameterIdentifier :: { ParameterIdentifier }
+: Identifier { $1 }
+
+MethodIdentifier :: { MethodIdentifier }
+: Identifier { $1 }
+
+LetIdentifier :: { LetIdentifier }
+: Identifier { $1 }
+
+DynamicArrayVariableIdentifier :: { DynamicArrayVariableIdentifier }
+: Identifier { $1 }
+
+ClassVariableIdentifier :: { ClassVariableIdentifier }
+: Identifier { $1 }
+
+VariableIdentifier :: { VariableIdentifier }
+: Identifier { $1 }
+
+GenerateBlockIdentifier :: { GenerateBlockIdentifier }
+: Identifier { $1 }
+
 
 HierarchicalIdentifier :: { HierarchicalIdentifier }
 : opt(second("$root", "."))
   sepBy(tuple(Identifier, ConstantBitSelect), ".") Identifier
   { HierarchicalIdentifier $1 $2 $3 }
+
 
 
 PackageScope :: { PackageScope }
@@ -1303,6 +1344,21 @@ PsClassIdentifier :: { PsClassIdentifier }
 
 PsCovergroupIdentifier :: { PsCovergroupIdentifier }
 : opt(PackageScope) CovergroupIdentifier { PsCovergroupIdentifier $1 $2 }
+
+PsParameterIdentifier :: { PsParameterIdentifier }
+: opt(either(PackageScope, ClassScope))
+  ParameterIdentifier
+  { PsParameterIdentifier $1 [] $2 }
+| sepBy(tuple(GenerateBlockIdentifier, opt(between("[", "]", ConstantExpression))), ".")
+  ParameterIdentifier
+  { PsParameterIdentifier Nothing $1 $2 }
+
+
+PsTypeIdentifier :: { PsTypeIdentifier }
+: "local" "::" TypeIdentifier { PsTypeIdentifier (Just Nothing) $3 }
+| PackageScope TypeIdentifier { PsTypeIdentifier (Just $1) $2 }
+| TypeIdentifier { PsTypeIdentifier Nothing }
+
 
 
 FilePathSpec :: { FilePathSpec }
