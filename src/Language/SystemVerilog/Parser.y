@@ -93,7 +93,7 @@ stringLit { Tok_StrinLit _ }
 "coverpoint" { Tok_Coverpoint }
 "cross" { Tok_Cross }
 "deassign" { Tok_Deassign }
-"decrement" { Tok_Decrement }
+"--" { Tok_Decrement }
 "default" { Tok_Default }
 "defparam" { Tok_Defparam }
 "design" { Tok_Design }
@@ -168,7 +168,7 @@ stringLit { Tok_StrinLit _ }
 "import" { Tok_Import }
 "incdir" { Tok_Incdir }
 "include" { Tok_Include }
-"increment" { Tok_Increment }
+"++" { Tok_Increment }
 "initial" { Tok_Initial }
 "inout" { Tok_Inout }
 "input" { Tok_Input }
@@ -326,7 +326,7 @@ stringLit { Tok_StrinLit _ }
 "tri1" { Tok_Tri1 }
 "triand" { Tok_Triand }
 "trior" { Tok_Trior }
-"tripleamp" { Tok_Tripleamp }
+"&&&" { Tok_Tripleamp }
 "trireg" { Tok_Trireg }
 "type" { Tok_Type }
 "typedef" { Tok_Typedef }
@@ -873,6 +873,33 @@ OpenValueRange :: { OpenValueRange }
 : ValueRange { $1 }
 
 
+-- | A.6.2 Procedural blocks and assignments
+--
+
+OperatorAssignment :: { OperatorAssignment }
+: VariableLvalue AssignmentOperator Expression
+  { OperatorAssignment $1 $2 $3 }
+
+
+
+
+-- | A.6.6 Conditional statements
+--
+
+CondPredicate :: { CondPredicate }
+: sepBy1(ExpressionOrCondPattern, "&&&") { CondPredicate $1 }
+
+
+ExpressionOrCondPattern :: { ExpressionOrCondPattern }
+: Expression { Left $1 }
+| CondPattern { Right $1 }
+
+
+CondPattern :: { CondPattern }
+: Expression "matches" Pattern
+  { CondPattern $1 $3 }
+
+
 
 -- | A.6.7.1 Patterns
 --
@@ -932,6 +959,16 @@ Concatenation :: { Concatenation }
 : "{" sepBy1(Expression, ",") "}"
   { $2 }
 
+
+ConstantConcatenation :: { ConstantConcatenation }
+: "{" sepBy1(ConstantExpression, ",") "}" { $2 }
+
+
+ConstantMultipleConcatenation :: { ConstantMultipleConcatenation }
+: "{" ConstantExpression ConstantConcatenation "}"
+  { ConstantMultipleConcatenation $2 $3 }
+
+
 MultipleConcatenation :: { MultipleConcatenation }
 : "{" Expression Concatenation "}"
   { MultipleConcatenation $2 $3 }
@@ -988,6 +1025,13 @@ ListOfArguments :: { ListOfArguments }
 -- | A.8.3 Expressions
 --
 
+IncOrDecExpression :: { IncOrDecExpression }
+: IncOrDecOperator many(AttributeInstance) VariableLvalue
+  { PrefixIncOrDecExpression $1 $2 $3 }
+| VariableLvalue many(AttributeInstance) IncOrDecOperator
+  { PostfixIncOrDecExpression $1 $2 $3 }
+
+
 ConditionalExpression :: { ConditionalExpression }
 : CondPredicate "?" many(AttributeInstance) Expression ":" Expression
   { ConditionalExpression $1 $3 $4 $6 }
@@ -1003,6 +1047,11 @@ ConstantExpression :: { ConstantExpression }
   { TernaryConstantExpression $1 $3 $4 $5 }
 
 
+ConstantMintypmaxExpression :: { ConstantMintypmaxExpression }
+: ConstantExpression ":" ConstantExpression ":" ConstantExpression { Right ($1, $3, $5) }
+| ConstantExpression { Left $1 }
+
+
 ConstantParamExpression :: { ConstantParamExpression }
 : ConstantMintypmaxExpression { ConstantMintypmaxExpression_ConstantParamExpression $1 }
 | DataType { DataType_ConstantParamExpression $1 }
@@ -1015,8 +1064,25 @@ ParamExpression :: { ParamExpression }
 | "$" { DollarParamExpression }
 
 
+ConstantRangeExpression :: { ConstantRange }
+: ConstantExpression { Left $1 }
+| ConstantPartSelectRange { Right $1 }
+
+
+ConstantPartSelectRange :: { ConstantPartSelectRange }
+: ConstantRange { Left $1 }
+| ConstantIndexedRange { Right $1 }
+
+
 ConstantRange :: { ConstantRange }
 : ConstantExpression ":" ConstantExpression { ($1, $3) }
+
+
+ConstantIndexedRange :: { ConstantIndexedRange }
+: ConstantExpression "+" ":" ConstantExpression
+  { PlusConstantIndexedRange $1 $4 }
+| ConstantExpression "-" ":" ConstantExpression
+  { MinusConstantIndexedRange $1 $4 }
 
 
 Expression :: { Expression }
@@ -1061,6 +1127,24 @@ IndexedRange :: { IndexedRange }
 
 -- | A.8.4 Primaries
 --
+
+ConstantPrimary :: { ConstantPrimary }
+: PrimaryLiteral { PrimaryLiteral_ConstantPrimary $1 }
+| PsParameterIdentifier ConstantSelect { PsParameterIdentifier_ConstantPrimary $1 $2 }
+-- | SpecparamIdentifier opt(ConstantRangeExpression) { SpecparamIdentifier_ConstantPrimary $1 $2 }
+| GenvarIdentifier { GenvarIdentifier_ConstantPrimary $1 }
+| FormalPortIdentifier ConstantSelect { FormalPortIdentifier_ConstantPrimary $1 $2 }
+| opt(either(PackageScope, ClassScope)) EnumIdentifier { EnumIdentifier_ConstantPrimary $1 $2 }
+| ConstantConcatenation opt(between("[", "]", ConstantRangeExpression)) { ConstantConcatenation_ConstantPrimary $1 $2 }
+| ConstantMultipleConcatenation opt(between("[", "]", ConstantRangeExpression)) { ConstantMultipleConcatenation_ConstantPrimary $1 $2 }
+-- | ConstantFunctionCall { ConstantFunctionCall_ConstantPrimary $1 }
+| ConstantLetExpression { ConstantLetExpression_ConstantPrimary $1 }
+| "(" ConstantMintypmaxExpression ")" { ConstantMintypmaxExpression_ConstantPrimary $1 }
+| ConstantCast { ConstantCast_ConstantPrimary }
+| ConstantAssignmentPatternExpression { ConstantAssignmentPatternExpression_ConstantPrimary $1 }
+| TypeReference { TypeReference_ConstantPrimary $1 }
+
+
 
 Primary :: { Primary }
 : PrimaryLiteral { PrimaryLiteral_Primary $1 }
@@ -1121,6 +1205,21 @@ ConstantBitSelect :: { ConstantBitSelect }
 : many(between("[", "]", ConstantExpression)) { $1 }
 
 
+ConstantSelect :: { ConstantSelect }
+: opt(tuple(many(tuple(second(".", MemberIdentifier), ConstantBitSelect)), second(".", MemberIdentifier)))
+  ConstantBitSelect opt(between("[", "]", ConstantPartSelectRange))
+  { ConstantSelect $1 $2 $3 }
+
+
+
+ConstantCast :: { ConstantCast }
+: CastingType "'" "(" ConstantExpression ")" { ConstantCast $1 $4 }
+
+
+ConstantLetExpression :: { ConstantLetExpression }
+: LetExpression { $1 }
+
+
 Cast :: { Cast }
 : CastingType "'" "(" Expression ")"
   { Cast $1 $4 }
@@ -1163,6 +1262,11 @@ BinaryOperator :: { BinaryOperator }
 | "^" "~" { CaretTildeBin }
 | "~" "^" { TildeCaretBin }
 | "^" { CaretBin }
+
+
+IncOrDecOperator :: { IncOrDecOperator }
+: "++" { Increment }
+| "--" { Decrement }
 
 
 -- | A.8.7 Numbers
@@ -1288,6 +1392,12 @@ TypeIdentifier :: { TypeIdentifier }
 : Identifier { $1 }
 
 PortIdentifier :: { PortIdentifier }
+: Identifier { $1 }
+
+FormalPortIdentifier :: { FormalPortIdentifier }
+: Identifier { $1 }
+
+GenvarIdentifier :: { GenvarIdentifier }
 : Identifier { $1 }
 
 InterfaceIdentifier :: { InterfaceIdentifier }
