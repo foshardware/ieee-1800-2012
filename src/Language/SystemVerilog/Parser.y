@@ -15,6 +15,23 @@ import Language.SystemVerilog.Tokens
 
 %token
 
+ident  { Tok_Ident _ }
+xdigit { Tok_XDigit _ }
+zdigit { Tok_XDigit _ }
+
+unsignedNumber { Tok_UnsignedNumber _ }
+binaryValue { Tok_BinaryValue _ }
+octalValue { Tok_OctalValue _ }
+hexValue { Tok_HexValue _ }
+
+decimalBase { Tok_DecimalBase _ }
+binaryBase { Tok_BinaryBase _ }
+octalBase { Tok_OctalBase _ }
+hexBase { Tok_HexBase _ }
+
+stringLit { Tok_StrinLit _ }
+
+
 "1step" { Tok_1step }
 "accepton" { Tok_Accepton }
 "alias" { Tok_Alias }
@@ -25,7 +42,7 @@ import Language.SystemVerilog.Tokens
 "&" { Tok_Amp }
 "and" { Tok_And }
 "andop" { Tok_Andop }
-"apos" { Tok_Apos }
+"'" { Tok_Apos }
 "arrow" { Tok_Arrow }
 "asscaret" { Tok_Asscaret }
 "assert" { Tok_Assert }
@@ -211,7 +228,7 @@ import Language.SystemVerilog.Tokens
 "pathpulse" { Tok_Pathpulse }
 "percent" { Tok_Percent }
 "|" { Tok_Pipe }
-"plus" { Tok_Plus }
+"+" { Tok_Plus }
 "pmos" { Tok_Pmos }
 "posedge" { Tok_Posedge }
 "primitive" { Tok_Primitive }
@@ -260,7 +277,7 @@ import Language.SystemVerilog.Tokens
 "shortreal" { Tok_Shortreal }
 "showcancelled" { Tok_Showcancelled }
 "signed" { Tok_Signed }
-"slash" { Tok_Slash }
+"/" { Tok_Slash }
 "small" { Tok_Small }
 "snexttime" { Tok_Snexttime }
 "soft" { Tok_Soft }
@@ -435,6 +452,19 @@ ModuleKeyword :: { ModuleKeyword }
 | "macromodule" { Macromodule }
 
 
+TimeunitsDeclaration :: { TimeunitsDeclaration }
+: "timeunit" TimeLiteral opt(between("/", ";", TimeLiteral))
+  { TimeunitsDeclaration (Just $2) $3 }
+| "timeprecision" TimeLiteral ";"
+  { TimeunitsDeclaration Nothing $2 }
+| "timeunit" TimeLiteral ";"
+  "timeprecision" TimeLiteral ";"
+  { TimeunitsDeclaration (Just $2) (Just $5) }
+| "timeprecision" TimeLiteral ";"
+  "timeunit" TimeLiteral ";"
+  { TimeunitsDeclaration (Just $5) (Just $2) }
+
+
 -- | A.1.3 Module parameters and ports
 --
 
@@ -453,12 +483,83 @@ ListOfPorts :: { [Port] }
 : "(" sepBy1(Port, ",") ")" { $2 }
 
 
+ListOfPortDeclarations :: { ListOfPortDeclarations }
+: "(" opt(sepBy1(tuple(many(AttributeInstance), AnsiPortDeclaration), ",")) ")"
+  { $2 }
+
+
 Port :: { Port }
 : second(".", PortIdentifier) "(" opt(PortExpression) ")"
   { Port (Just $1) $3 }
 | opt(PortExpression)
   { Port Nothing $1 }
 
+
+PortExpression :: { [PortReference] }
+: sepBy1(PortReference, ",") { $1 }
+
+
+PortReference :: { PortReference }
+: PortIdentifier ConstantSelect { PortReference $1 $2 }
+
+
+PortDirection :: { PortDirection }
+: "inout" { Inout }
+| "input" { Input }
+| "output" { Output }
+| "ref" { Ref }
+
+
+NetPortHeader :: { NetPortHeader }
+: opt(PortDirection) NetPortType { NetPortHeader $1 $2 }
+
+VariablePortHeader :: { VariablePortHeader }
+: opt(PortDirection) VariablePortType { VariablePortHeader $1 $2 }
+
+InterfacePortHeader :: { InterfacePortHeader }
+: "interface" opt(second(".", ModportIdentifier))
+  { InterfacePortHeader Nothing $2 }
+| InterfaceIdentifier opt(second(".", ModportIdentifier))
+  { InterfacePortHeader $1 $2 }
+
+
+AnsiPortDeclaration :: { AnsiPortDeclaration }
+: opt(NetPortHeader) PortIdentifier many(UnpackedDimension) opt(second("=", ConstantExpression))
+  { NetPortHeader_AnsiPortDeclaration $1 $2 $3 $4 }
+| opt(InterfacePortHeader) PortIdentifier many(UnpackedDimension) opt(second("=", ConstantExpression))
+  { InterfacePortHeader_AnsiPortDeclaration $1 $2 $3 $4 }
+| opt(VariablePortHeader) PortIdentifier many(UnpackedDimension) opt(second("=", ConstantExpression))
+  { VariablePortHeader_AnsiPortDeclaration $1 $2 $3 $4 }
+| opt(PortDirection) "." PortIdentifier "(" opt(Expression) ")"
+  { AnsiPortDeclaration $1 $3 $5 }
+
+
+-- | A.1.4 Module items
+--
+
+ModuleItem :: { ModuleItem }
+: PortDeclaration ";" { PortDeclaration_ModuleItem $1 }
+| NonPortModuleItem { NonPortModuleItem_ModuleItem $1 }
+
+
+NonPortModuleItem :: { NonPortModuleItem }
+: GenerateRegion { GenerateRegion_NonPortModuleItem $1 }
+| ModuleOrGenerateItem { ModuleOrGenerateItem_NonPortModuleItem $1 }
+| SpecifyBlock { SpecifyBlock_NonPortModuleItem $1 }
+-- | SpecparamDeclaration { SpecparamDeclaration_NonPortModuleItem $1 }
+-- | ProgramDeclaration { ProgramDeclaration_NonPortModuleItem $1 }
+| ModuleDeclaration { ModuleDeclaration_NonPortModuleItem $1 }
+-- | InterfaceDeclaration { InterfaceDeclaration_NonPortModuleItem $1 }
+| TimeunitsDeclaration { TimeunitsDeclaration_NonPortModuleItem $1 }
+
+
+
+-- | A.1.9 Class items
+--
+
+RandomQualifier :: { RandomQualifier }
+: "rand"  { Rand  }
+| "randc" { Randc }
 
 
 -- | A.2 Declarations
@@ -480,6 +581,26 @@ ParameterDeclaration :: { ParameterDeclaration }
   { DataTypeOrImplicit_ParameterDeclaration $2 $3 }
 | "parameter" "type" ListOfTypeAssignments
   { ListOfTypeAssignments_ParameterDeclaration $3 }
+
+
+Lifetime :: { Lifetime }
+: "static" { StaticLifetime }
+| "automatic" { AutomaticLifetime }
+
+
+
+-- | A.2.1.3  Type declarations
+--
+
+PackageImportDeclaration :: { PackageImportDeclaration }
+: "import" sepBy1(PackageImportItem, ",") ";" { $2 }
+
+PackageImportItem :: { PackageImportItem }
+: PackageIdentifier "::" Identifier { PackageImportItem $1 (Just $3) }
+| PackageIdentifier "::" "*" { PackageImportItem $1 Nothing }
+
+
+
 
 
 -- | A.2.2 Declaration types
@@ -600,8 +721,8 @@ DataTypeOrVoid :: { DataTypeOrVoid }
 
 
 StructUnion :: { StructUnion }
-: "struct"             { TStruct }
-| "union" opt(Tagged)  { TUnion  }
+: "struct"               { TStruct }
+| "union" opt("tagged")  { TUnion  }
 
 
 TypeReference :: { TypeReference }
@@ -644,10 +765,82 @@ VariableDeclAssignment :: { VariableDeclAssignment }
 | ClassVariableIdentifier opt(second("=", ClassNew))
   { ClassVariableIdentifier_VariableDeclAssignment $1 $2 }
 
+ClassNew :: { ClassNew }
+: opt(ClassScope) "new" opt(between("(", ")", ListOfArguments))
+  { ClassNew $1 $3 }
+| "new" Expression
+  { Expression_ClassNew $2 }
+
 
 DynamicArrayNew :: { DynamicArrayNew }
 : "new" "[" Expression "]" opt(between("(", ")", Expression))
   { DynamicArrayNew $3 $5 }
+
+
+
+-- | A.2.5 Declaration ranges
+--
+
+UnpackedDimension :: { UnpackedDimension }
+: "[" ConstantRange "]" { ConstantRange_UnpackedDimension $2 }
+| "[" ConstantExpression "]" { ConstantExpression_UnpackedDimension $2 }
+
+PackedDimension :: { PackedDimension }
+: "[" ConstantRange "]" { ConstantRange_PackedDimension $2 }
+| "[" UnsizedDimension "]" { UnsizedDimension_PackedDimension $2 }
+
+
+AssociativeDimension :: { AssociativeDimension }
+: "[" DataType "]" { Just $2 }
+| "[" "*" "]" { Nothing }
+
+VariableDimension :: { VariableDimension }
+: UnsizedDimension { UnsizedDimension_VariableDimension $1 }
+| UnpackedDimension { UnpackedDimension_VariableDimension $1 }
+| AssociativeDimension { AssociativeDimension_VariableDimension $1 }
+| QueueDimension { QueueDimension_VariableDimension $1 }
+
+QueueDimension :: { QueueDimension }
+: "[" "$" opt(second(":", ConstantExpression)) "]" { $3 }
+
+
+-- | A.4 Instantiations
+--
+--   A.4.1 Instantiation
+--
+--   A.4.1.1 Module instantiation
+--
+
+
+ParameterValueAssignment :: { ParameterValueAssignment }
+: "#" "(" opt(ListOfParameterAssignments)  ")" { $3 }
+
+
+ListOfParameterAssignments :: { ListOfParameterAssignments }
+: sepBy1(OrderedParameterAssignment, ",") { Left $1 }
+| sepBy1(NamedParameterAssignment, ",") { Right $1 }
+
+
+OrderedParameterAssignment :: { OrderedParameterAssignment }
+: ParamExpression { $1 }
+
+NamedParameterAssignment :: { NamedParameterAssignment }
+: "." ParameterIdentifier "(" opt(ParamExpression) ")" { ($2, $4) }
+
+
+
+-- | A.8.2 Subroutine calls
+--
+
+ListOfArguments :: { ListOfArguments }
+: sepBy1(opt(Expression), ",")
+  sepBy(tuple(second(".", Identifier), between("(", ")", opt(Expression))), ",")
+  { ListOfArguments (Just $1) $2 }
+| sepBy1(tuple(second(".", Identifier), between("(", ")", opt(Expression))), ",")
+  { ListOfArguments Nothing $1 }
+
+
+
 
 
 -- | A.8.3 Expressions
@@ -667,6 +860,12 @@ ConstantParamExpression :: { ConstantParamExpression }
 : ConstantMintypmaxExpression { ConstantMintypmaxExpression_ConstantParamExpression $1 }
 | DataType { DataType_ConstantParamExpression $1 }
 | "$" { DollarConstantParamExpression }
+
+
+ParamExpression :: { ParamExpression }
+: MintypmaxExpression { MintypmaxExpression_ParamExpression $1 }
+| DataType { DataType_ParamExpression $1 }
+| "$" { DollarParamExpression }
 
 
 Expression :: { Expression }
@@ -704,6 +903,23 @@ Primary :: { Primary }
 | "null" { NullPrimary }
 
 
+ClassQualifier :: { ClassQualifier }
+: opt(second("local", "::")) opt(either(first(ImplicitDataType, "."), ClassScope))
+  { ClassQualifier $1 $2 }
+
+
+RangeExpression :: { RangeExpression }
+: Expression { Left $1 }
+| PartSelectRange { Right $1 }
+
+
+TimeLiteral :: { TimeLiteral }
+: UnsignedNumber TimeUnit { UnsignedTimeLiteral $1 $2 }
+| FixedPointNumber TimeUnit { FixedPointTimeLiteral $1 $2 }
+
+TimeUnit :: { TimeUnit }
+: Identifier { $1 }
+
 
 -- | A.8.6 Operators
 --
@@ -733,6 +949,70 @@ IntegralNumber :: { IntegralNumber }
 | OctalNumber { OctalNumber_IntegralNumber $1 }
 | BinaryNumber { BinaryNumber_IntegralNumber $1 }
 | HexNumber { HexNumber_IntegralNumber $1 }
+
+
+DecimalNumber :: { DecimalNumber }
+: UnsignedNumber { UnsignedNumber_DecimalNumber Nothing $1 }
+| opt(Size) DecimalBase UnsignedNumber { UnsignedNumber_DecimalNumber $1 $3 }
+| opt(Size) DecimalBase xdigit { X_DecimalNumber $1 $3 }
+| opt(Size) DecimalBase zdigit { Z_DecimalNumber $1 $3 }
+
+BinaryNumber :: { BinaryNumber }
+: opt(Size) BinaryBase BinaryValue { BinaryNumber $1 $3 }
+
+OctalNumber :: { OctalNumber }
+: opt(Size) OctalBase OctalValue { OctalNumber $1 $3 }
+
+HexNumber :: { HexNumber }
+: opt(Size) HexBase HexValue { HexNumber $1 $3 }
+
+
+RealNumber :: { RealNumber }
+: FixedPointNumber { FixedPointNumber_RealNumber $1 }
+| UnsignedNumber opt(second(".", UnsignedNumber)) "exp" opt(Sign) UnsignedNumber
+  { UnsignedNumber_RealNumber $1 $2 $3 $4 }
+
+
+FixedPointNumber :: { FixedPointNumber }
+: UnsignedNumber "." UnsignedNumber { ($1, $3) }
+
+
+Sign :: { Sign }
+: "+" { Plus }
+| "-" { Minus }
+
+
+Size :: { Size }
+: UnsignedNumber { $1 }
+
+UnbasedUnsizedLiteral :: { UnbasedUnsizedLiteral }
+: "'" UnsignedNumber { $2 }
+
+
+UnsignedNumber :: { UnsignedNumber }
+: unsignedNumber { fromUnsignedNumber($1) }
+
+BinaryValue :: { BinaryValue }
+: binaryValue { fromBinaryValue($1) }
+
+OctalValue :: { OctalValue }
+: octalValue { fromOctalValue($1) }
+
+HexValue :: { HexValue }
+: hexValue { fromHexValue($1) }
+
+
+DecimalBase :: { DecimalBase }
+: decimalBase { $1 }
+
+BinaryBase :: { BinaryBase }
+: binaryBase { $1 }
+
+OctalBase :: { OctalBase }
+: octalBase { $1 }
+
+HexBase :: { HexBase }
+: hexBase { $1 }
 
 
 
@@ -771,11 +1051,25 @@ EnumIdentifier :: { EnumIdentifier }
 TypeIdentifier :: { TypeIdentifier }
 : Identifier { $1 }
 
-InterfaceIdentifier :: { IntefaceIdentifier }
+PortIdentifier :: { PortIdentifier }
+: Identifier { $1 }
+
+InterfaceIdentifier :: { InterfaceIdentifier }
+: Identifier { $1 }
+
+ModportIdentifier :: { ModportIdentifier }
 : Identifier { $1 }
 
 CovergroupIdentifier :: { CovergroupIdentifier }
 : Identifier { $1 }
+
+PackageIdentifier :: { PackageIdentifier }
+: Identifier { $1 }
+
+
+PackageScope :: { PackageScope }
+: PackageIdentifier "::" { Just $1 }
+| "unitscope" "::" { Nothing }
 
 
 PsClassIdentifier :: { PsClassIdentifier }
@@ -791,7 +1085,7 @@ FilePathSpec :: { FilePathSpec }
 
 
 Identifier :: { Identifier }
-: { mempty }
+: ident { identifier $1 }
 
 
 
@@ -828,6 +1122,9 @@ either(l, r)
 : l { Left  $1 }
 | r { Right $1 }
 
+first(p, a)
+: p a { $1 }
+
 second(a, p)
 : a p { $2 }
 
@@ -836,6 +1133,12 @@ third(a, b, p)
 
 
 {
+
+identifier :: Token -> Identifier
+identifier (Tok_Ident s) = s
+identifier _ = mempty
+
+
 parseError :: [Token] -> a
 parseError a = case a of
   []              -> error "Parse error: no tokens left to parse."
