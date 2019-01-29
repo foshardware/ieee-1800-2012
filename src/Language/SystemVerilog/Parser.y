@@ -713,6 +713,12 @@ Signing :: { Signing }
 | "unsigned" { Unsigned }
 
 
+SimpleType :: { SimpleType }
+: IntegerType { IntegerType_SimpleType $1 }
+| NonIntegerType { NonIntegerType_SimpleType $1 }
+| PsTypeIdentifier { PsType_SimpleType $1 }
+| PsParameterIdentifier { PsParameter_SimpleType $1 }
+
 
 StructUnionMember :: { StructUnionMember }
 : many(AttributeInstance)
@@ -946,8 +952,8 @@ ConstantAssignmentPatternExpression :: { ConstantAssignmentPatternExpression }
 -- AssignmentPatternNetLvalue :: { AssignmentPatternNetLvalue }
 -- : "'" "[" sepBy1(NetLvalue, ",") "]" { $3 }
 
--- AssignmentPatternVariableLvalue :: { AssignmentPatternNetLvalue }
--- : "'" "[" sepBy1(VariableLvalue, ",") "]" { $3 }
+AssignmentPatternVariableLvalue :: { AssignmentPatternNetLvalue }
+: "'" "[" sepBy1(VariableLvalue, ",") "]" { $3 }
 
 
 -- | A.8 Expressions
@@ -1229,6 +1235,18 @@ Cast :: { Cast }
 -- | A.8.5 Expression left-side values
 --
 
+-- | A.8.5 Expression left-side values
+--
+
+VariableLvalue :: { VariableLvalue }
+: HierarchicalVariableIdentifier Select
+  { HierarchicalVariableIdentifier_VariableLvalue $1 $2 }
+| "{" sepBy1(VariableLvalue, ",") "}"
+  { VariableLvalues_VariableLvalue $2 }
+| opt(AssignmentPatternExpressionType) AssignmentPatternVariableLvalue
+  { AssignmentPatternVariableLvalue_VariableLvalue $1 $2 }
+| StreamingConcatenation { StreamingConcatenation_VariableLvalue }
+
 
 -- | A.8.6 Operators
 --
@@ -1441,6 +1459,9 @@ HierarchicalIdentifier :: { HierarchicalIdentifier }
 : opt(second("$root", "."))
   sepBy(tuple(Identifier, ConstantBitSelect), ".") Identifier
   { HierarchicalIdentifier $1 $2 $3 }
+
+HierarchicalVariableIdentifier :: { HierarchicalVariableIdentifier }
+: HierarchicalIdentifier { $1 }
 
 
 
