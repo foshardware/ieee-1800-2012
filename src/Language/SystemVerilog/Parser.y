@@ -30,7 +30,7 @@ import Language.SystemVerilog.Tokens
 "asscaret" { Tok_Asscaret }
 "assert" { Tok_Assert }
 "assign" { Tok_Assign }
-"assignop" { Tok_Assignop }
+"=" { Tok_Assignop }
 "assminus" { Tok_Assminus }
 "asspercent" { Tok_Asspercent }
 "asspipe" { Tok_Asspipe }
@@ -40,7 +40,7 @@ import Language.SystemVerilog.Tokens
 "assshiftr" { Tok_Assshiftr }
 "assshiftrr" { Tok_Assshiftrr }
 "assslash" { Tok_Assslash }
-"assstar" { Tok_Assstar }
+"ass*" { Tok_Ass* }
 "assume" { Tok_Assume }
 "at" { Tok_At }
 "automatic" { Tok_Automatic }
@@ -64,8 +64,8 @@ import Language.SystemVerilog.Tokens
 "class" { Tok_Class }
 "clocking" { Tok_Clocking }
 "cmos" { Tok_Cmos }
-"colon" { Tok_Colon }
-"comma" { Tok_Comma }
+":" { Tok_Colon }
+"," { Tok_Comma }
 "config" { Tok_Config }
 "const" { Tok_Const }
 "constraint" { Tok_Constraint }
@@ -84,11 +84,11 @@ import Language.SystemVerilog.Tokens
 "dist" { Tok_Dist }
 "do" { Tok_Do }
 "dollar" { Tok_Dollar }
-"dot" { Tok_Dot }
+"." { Tok_Dot }
 "doublearrow" { Tok_Doublearrow }
 "doubleat" { Tok_Doubleat }
 "doublehash" { Tok_Doublehash }
-"doublestar" { Tok_Doublestar }
+"double*" { Tok_Double* }
 "dweq" { Tok_Dweq }
 "dwne" { Tok_Dwne }
 "edge" { Tok_Edge }
@@ -136,7 +136,7 @@ import Language.SystemVerilog.Tokens
 "gt" { Tok_Gt }
 "gteq" { Tok_Gteq }
 "gtgt" { Tok_Gtgt }
-"hash" { Tok_Hash }
+"#" { Tok_Hash }
 "highz0" { Tok_Highz0 }
 "highz1" { Tok_Highz1 }
 "if" { Tok_If }
@@ -167,7 +167,7 @@ import Language.SystemVerilog.Tokens
 "joinnone" { Tok_Joinnone }
 "large" { Tok_Large }
 "lbrace" { Tok_Lbrace }
-"lbracket" { Tok_Lbracket }
+"[" { Tok_Lbracket }
 "let" { Tok_Let }
 "liblist" { Tok_Liblist }
 "library" { Tok_Library }
@@ -175,17 +175,17 @@ import Language.SystemVerilog.Tokens
 "localparam" { Tok_Localparam }
 "logic" { Tok_Logic }
 "longint" { Tok_Longint }
-"lparen" { Tok_Lparen }
+"(" { Tok_Lparen }
 "lt" { Tok_Lt }
 "lteq" { Tok_Lteq }
 "ltlt" { Tok_Ltlt }
 "macromodule" { Tok_Macromodule }
 "matches" { Tok_Matches }
 "medium" { Tok_Medium }
-"minus" { Tok_Minus }
+"-" { Tok_Minus }
 "modport" { Tok_Modport }
 "module" { Tok_Module }
-"namequal" { Tok_Namequal }
+"::" { Tok_Namequal }
 "nand" { Tok_Nand }
 "negedge" { Tok_Negedge }
 "nettype" { Tok_Nettype }
@@ -233,7 +233,7 @@ import Language.SystemVerilog.Tokens
 "randomize" { Tok_Randomize }
 "randsequence" { Tok_Randsequence }
 "rbrace" { Tok_Rbrace }
-"rbracket" { Tok_Rbracket }
+"]" { Tok_Rbracket }
 "rcmos" { Tok_Rcmos }
 "real" { Tok_Real }
 "realtime" { Tok_Realtime }
@@ -245,7 +245,7 @@ import Language.SystemVerilog.Tokens
 "restrict" { Tok_Restrict }
 "rnmos" { Tok_Rnmos }
 "rootscope" { Tok_Rootscope }
-"rparen" { Tok_Rparen }
+")" { Tok_Rparen }
 "rpmos" { Tok_Rpmos }
 "rtran" { Tok_Rtran }
 "rtranif0" { Tok_Rtranif0 }
@@ -253,7 +253,7 @@ import Language.SystemVerilog.Tokens
 "salways" { Tok_Salways }
 "sample" { Tok_Sample }
 "scalared" { Tok_Scalared }
-"semi" { Tok_Semi }
+";" { Tok_Semi }
 "sequence" { Tok_Sequence }
 "seventually" { Tok_Seventually }
 "shortint" { Tok_Shortint }
@@ -267,7 +267,7 @@ import Language.SystemVerilog.Tokens
 "solve" { Tok_Solve }
 "specify" { Tok_Specify }
 "specparam" { Tok_Specparam }
-"star" { Tok_Star }
+"*" { Tok_Star }
 "static" { Tok_Static }
 "std" { Tok_Std }
 "string" { Tok_String }
@@ -347,11 +347,357 @@ import Language.SystemVerilog.Tokens
 
 
 ast :: { AST }
-: { LibraryText_AST (LibraryText []) }
+: LibraryText { LibraryText_AST $1 }
+| SourceText { SourceText_AST $1 } 
 
+
+-- | A.1 Source text
+--
+--  A.1.1 Library source text
+--
+
+LibraryText :: { LibraryText }
+: many1(LibraryDescription) { LibraryText $1 }
+
+LibraryDescription :: { LibraryDescription }
+: LibraryDeclaration { LibraryDeclaration_LibraryDescription $1 }
+| IncludeStatement { IncludeStatement_LibraryDescription $1 }
+-- | ConfigDeclaration { ConfigDeclaration_LibraryDescription $1 }
+| ";" { NoLibraryDescription }
+
+LibraryDeclaration :: { LibraryDeclaration }
+: "library"
+  LibraryIdentifier
+  sepBy1(FilePathSpec, ",")
+  opt(third("-", "incdir", sepBy1(FilePathSpec, ",")))
+  ";"
+  { LibraryDeclaration $2 $3 $4 }
+
+IncludeStatement :: { IncludeStatement }
+: "include" FilePathSpec ";" { IncludeStatement $2 }
+
+
+-- | A.1.2 SystemVerilog source text
+--
+
+SourceText :: { SourceText }
+: opt(TimeunitsDeclaration) many1(Description) { SourceText $1 $2 }
+
+Description :: { Description }
+: ModuleDeclaration { ModuleDeclaration_Description $1 }
+-- | UdpDeclaration { UdpDeclaration_Description $1 }
+-- | InterfaceDeclaration { InterfaceDeclaration_Description $1 }
+-- | ProgramDeclaration { ProgramDeclaration_Description $1 }
+-- | PackageDeclaration { PackageDeclaration_Description $1 }
+-- | many(AttributeInstance) PackageItem { PackageItem_Description $1 $2 }
+-- | many(AttributeInstance) BindDirective { BindDirective_Description $1 $2 }
+-- | ConfigDeclaration { ConfigDeclaration_Description $1 }
+
+
+ModuleNonAnsiHeader :: { ModuleNonAnsiHeader }
+: many(AttributeInstance) ModuleKeyword opt(Lifetime) ModuleIdentifier
+  many(PackageImportDeclaration) opt(ParameterPortList) ListOfPorts ";"
+  { ModuleNonAnsiHeader $1 $2 $3 $4 $5 $6 $7 }
+
+
+ModuleAnsiHeader :: { ModuleAnsiHeader }
+: many(AttributeInstance) ModuleKeyword opt(Lifetime) ModuleIdentifier
+  many(PackageImportDeclaration) opt(ParameterPortList) opt(ListOfPortDeclarations) ";"
+  { ModuleNonAnsiHeader $1 $2 $3 $4 $5 $6 $7 }
+
+
+ModuleDeclaration :: { ModuleDeclaration }
+: ModuleNonAnsiHeader
+  opt(TimeunitsDeclaration)
+  many(ModuleItem)
+  "endmodule"
+  opt(second(":", ModuleIdentifier))
+  { ModuleNonAnsiHeader_ModuleDeclaration $1 $2 $3 $5 }
+| ModuleAnsiHeader
+  opt(TimeunitsDeclaration)
+  many(NonPortModuleItem)
+  "endmodule"
+  opt(second(":", ModuleIdentifier))
+  { ModuleAnsiHeader_ModuleDeclaration $1 $2 $3 $5 }
+| many(AttributeInstance)
+  ModuleKeyword opt(Lifetime) "(" "." "*" ")" ";"
+  opt(TimeunitsDeclaration)
+  many(ModuleItem)
+  "endmodule"
+  opt(second(":", ModuleIdentifier))
+  { ModuleDeclaration $1 $2 $3 $4 $9 $10 $12 }
+| "extern" ModuleNonAnsiHeader { ExternModuleNonAnsiHeader_ModuleDeclaration }
+| "extern" ModuleAnsiHeader { ExternModuleAnsiHeader_ModuleDeclaration }
+
+
+ModuleKeyword :: { ModuleKeyword }
+: "module" { Module }
+| "macromodule" { Macromodule }
+
+
+-- | A.1.3 Module parameters and ports
+--
+
+ParameterPortList :: { ParameterPortList }
+: "#" "(" opt(ListOfParamAssignments) sepBy(ParameterPortDeclaration, ",") ")"
+  { ParameterPortList $3 $4 }
+
+ParameterPortDeclaration :: { ParameterPortDeclaration }
+: ParameterDeclaration { ParameterDeclaration_ParameterPortDeclaration $1 }
+| LocalParameterDeclaration { LocalParameterDeclaration_ParameterPortDeclaration $1 }
+| DataType ListOfParamAssignments { DataType_ParameterPortDeclaration $1 }
+| "type" ListOfTypeAssignments { TypeAssignments_ParameterPortDeclaration $2 }
+
+
+ListOfPorts :: { [Port] }
+: "(" sepBy1(Port, ",") ")" { $2 }
+
+
+-- | A.2 Declarations
+--
+--   A.2.1 Declaration types
+--
+--   A.2.1.1 Module parameter declarations
+--
+
+LocalParameterDeclaration :: { LocalParameterDeclaration }
+: "localparam" DataTypeOrImplicit ListOfParamAssignments
+  { DataTypeOrImplicit_LocalParameterDeclaration $2 $3 }
+| "localparam" "type" ListOfTypeAssignments
+  { ListOfTypeAssignments_LocalParameterDeclaration $3 }
+
+
+ParameterDeclaration :: { ParameterDeclaration }
+: "parameter" DataTypeOrImplicit ListOfParamAssignments
+  { DataTypeOrImplicit_ParameterDeclaration $2 $3 }
+| "parameter" "type" ListOfTypeAssignments
+  { ListOfTypeAssignments_ParameterDeclaration $3 }
+
+
+-- | A.2.2 Declaration types
+--
+--   A.2.2.1 Net and variable types
+--
+
+DataType :: { DataType }
+: IntegerVectorType opt(Signing) many(PackedDimension)
+  { IntegerVectorType_DataType $1 $2 $3 }
+| IntegerAtomType opt(Signing)
+  { IntegerAtomType_DataType $1 $2 }
+| NonIntegerType { NonIntegerType_DataType $1 }
+| StructUnion
+  opt(second("packed", opt(Signing)))
+  "(" many1(StructUnionMember) ")"
+  many(PackedDimension)
+  { StructUnion_DataType $1 $2 $4 $6 }
+| opt(EnumBaseType)
+  "(" sepBy1(EnumNameDeclaration, ",") ")"
+  many(PackedDimension)
+  { Enum_DataType $1 $3 $5 }
+| "string" { StringDataType }
+| "chandle" { ChandleDataType }
+| "virtual" opt("interface")
+  InterfaceIdentifier
+  opt(ParameterValueAssignment)
+  opt(ModportIdentifier)
+  { Interface_DataType $2 $3 $4 $5 }
+| opt(either(ClassScope, PackageScope))
+  TypeIdentifier
+  many(PackedDimension)
+  { Type_DataType $1 $2 $3 }
+| ClassType { ClassType_DataType $1 }
+| "event" { EventDataType }
+| PsCovergroupIdentifier { PsCovergroup_DataType $1 }
+| TypeReference { TypeReference_DataType $1 }
+
+
+DataTypeOrImplicit :: { DataTypeOrImplicit }
+: DataType { DataType_DataTypeOrImplicit $1 }
+| ImplicitDataType { ImplicitDataType_DataTypeOrImplicit $1 }
+
+
+ImplicitDataType :: { ImplicitDataType }
+: opt(Signing) many(PackedDimension) { ImplicitDataType $1 $2 }
+
+
+EnumBaseType :: { EnumBaseType }
+: IntegerAtomType opt(Signing) { IntegerAtomType_EnumBaseType $1 $2 }
+| IntegerVectorType opt(Signing) opt(PackedDimension)
+  { IntegerVectorType_EnumBaseType $1 $2 $3 }
+| TypeIdentifier opt(PackedDimension) { Type_EnumBaseType $1 $2 }
+
+
+EnumNameDeclaration :: { EnumNameDeclaration }
+: EnumIdentifier
+  opt(between("[", "]", tuple(IntegralNumber, opt(second(";", IntegralNumber)))))
+  opt(second("=", ConstantExpression))
+  { EnumNameDeclaration $1 $2 $3 }
+
+
+ClassScope :: { ClassScope }
+: ClassType "::" { $1 }
+
+ClassType :: { ClassType }
+: PsClassIdentifier
+  opt(ParameterValueAssignment)
+  many(second("::", tuple(ClassIdentifier, opt(ParameterValueAssignment))))
+  { ClassType $1 $2 $3 }
+
+
+IntegerType :: { IntegerType }
+: IntegerVectorType { IntegerVectorType_IntegerType $1 }
+| IntegerAtomType { IntegerAtomType_IntegerType $1 }
+
+
+IntegerAtomType :: { IntegerAtomType }
+: "byte"     { TByte     }
+| "shortint" { TShortint }
+| "int"      { TInt      }
+| "longint"  { TLongint  }
+| "integer"  { TInteger  }
+| "time"     { TTime     }
+
+
+IntegerVectorType :: { IntegerVectorType }
+: "bit"   { TBit   }
+| "logic" { TLogic }
+| "reg"   { TReg   }
+
+
+NonIntegerType :: { NonIntegerType }
+: "shortreal" { TShortreal }
+| "real"      { TReal      }
+| "realtime"  { TRealtime  }
+
+
+
+Signing :: { Signing }
+: "signed"   { Signed   }
+| "unsigned" { Unsigned }
+
+
+
+StructUnionMember :: { StructUnionMember }
+: many(AttributeInstance)
+  opt(RandomQualifier)
+  DataTypeOrVoid
+  ListOfVariableDeclAssignments
+  ";"
+  { StructUnionMember $1 $2 $3 $4 }
+
+
+DataTypeOrVoid :: { DataTypeOrVoid }
+: DataType { DataType_DataTypeOrVoid $1 }
+| "void" { VoidDataType }
+
+
+StructUnion :: { StructUnion }
+: "struct"             { TStruct }
+| "union" opt(Tagged)  { TUnion  }
+
+
+TypeReference :: { TypeReference }
+: "type" "(" Expression ")" { Expression_TypeReference $3 }
+| "type" "(" DataType ")" { DataType_TypeReference $3 }
+
+
+
+-- | A.2.3 Declaration lists
+--
+
+ListOfParamAssignments :: { ListOfParamAssignments }
+: sepBy1(ParamAssignment, ",") { $1 }
+
+ListOfTypeAssignments :: { ListOfTypeAssignments }
+: sepBy1(TypeAssignment, ",") { $1 }
+
+ListOfVariableDeclAssignments :: { ListOfVariableDeclAssignments }
+: sepBy1(VariableDeclAssignment, ",") { $1 }
+
+
+
+-- | A.8.3 Expressions
+--
+
+
+
+
+
+-- | A.9 General
+-- 
+--   A.9.1 Attributes
+--
+
+AttributeInstance :: { AttributeInstance }
+: "(" "*" sepBy1(AttrSpec, ",") "*" ")" { AttributeInstance $3 }
+
+
+AttrSpec :: { AttrSpec }
+: AttrName opt(second("=", ConstantExpression)) { AttrSpec $1 $2 }
+
+
+AttrName :: { AttrName }
+: Identifier { $1 }
+
+
+-- | A.9.3 Identifiers
+--
+
+LibraryIdentifier :: { LibraryIdentifier }
+: Identifier { $1 }
+
+ModuleIdentifier :: { LibraryIdentifier }
+: Identifier { $1 }
+
+EnumIdentifier :: { EnumIdentifier }
+: Identifier { $1 }
+
+TypeIdentifier :: { TypeIdentifier }
+: Identifier { $1 }
+
+InterfaceIdentifier :: { IntefaceIdentifier }
+: Identifier { $1 }
+
+CovergroupIdentifier :: { CovergroupIdentifier }
+: Identifier { $1 }
+
+
+PsClassIdentifier :: { PsClassIdentifier }
+: opt(PackageScope) ClassIdentifier { PsClassIdentifier $1 $2 }
+
+PsCovergroupIdentifier :: { PsCovergroupIdentifier }
+: opt(PackageScope) CovergroupIdentifier { PsCovergroupIdentifier $1 $2 }
+
+
+FilePathSpec :: { FilePathSpec }
+: Identifier { $1 }
+
+
+
+Identifier :: { Identifier }
+: { mempty }
+
+
+
+-- | Higher order combinators
+--
+
+tuple(a, b)
+: a b { ($1, $2) }
+
+between(a, b, p)
+: a p b { $2 }
+
+sepBy(p, s)
+: sepBy1(p, s) s p { $3 : $1 }
+| { [] }
 
 sepBy1(p, s)
 : sepBy1(p, s) s p { $3 : $1 }
+| p { [$1] }
+
+many1(p)
+: many(p) p { $2 : $1 }
 | p { [$1] }
 
 many(p)
@@ -362,6 +708,15 @@ opt(p)
 : p { Just $1 }
 |   { Nothing }
 
+either(l, r)
+: l { Left  $1 }
+| r { Right $1 }
+
+second(a, p)
+: a p { $2 }
+
+third(a, b, p)
+: a b p { $3 }
 
 
 {
