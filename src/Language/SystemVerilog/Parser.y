@@ -22,7 +22,7 @@ import Language.SystemVerilog.Tokens
 "alwayscomb" { Tok_Alwayscomb }
 "alwaysff" { Tok_Alwaysff }
 "alwayslatch" { Tok_Alwayslatch }
-"amp" { Tok_Amp }
+"&" { Tok_Amp }
 "and" { Tok_And }
 "andop" { Tok_Andop }
 "apos" { Tok_Apos }
@@ -54,7 +54,7 @@ import Language.SystemVerilog.Tokens
 "bufif0" { Tok_Bufif0 }
 "bufif1" { Tok_Bufif1 }
 "byte" { Tok_Byte }
-"caret" { Tok_Caret }
+"^" { Tok_Caret }
 "case" { Tok_Case }
 "casex" { Tok_Casex }
 "casez" { Tok_Casez }
@@ -83,7 +83,7 @@ import Language.SystemVerilog.Tokens
 "disable" { Tok_Disable }
 "dist" { Tok_Dist }
 "do" { Tok_Do }
-"dollar" { Tok_Dollar }
+"$" { Tok_Dollar }
 "." { Tok_Dot }
 "doublearrow" { Tok_Doublearrow }
 "doubleat" { Tok_Doubleat }
@@ -199,7 +199,7 @@ import Language.SystemVerilog.Tokens
 "notequivalent" { Tok_Notequivalent }
 "notif0" { Tok_Notif0 }
 "notif1" { Tok_Notif1 }
-"notop" { Tok_Notop }
+"!" { Tok_Notop }
 "null" { Tok_Null }
 "option" { Tok_Option }
 "or" { Tok_Or }
@@ -210,7 +210,7 @@ import Language.SystemVerilog.Tokens
 "parameter" { Tok_Parameter }
 "pathpulse" { Tok_Pathpulse }
 "percent" { Tok_Percent }
-"pipe" { Tok_Pipe }
+"|" { Tok_Pipe }
 "plus" { Tok_Plus }
 "pmos" { Tok_Pmos }
 "posedge" { Tok_Posedge }
@@ -226,7 +226,7 @@ import Language.SystemVerilog.Tokens
 "pulsestyleondetect" { Tok_Pulsestyleondetect }
 "pulsestyleonevent" { Tok_Pulsestyleonevent }
 "pure" { Tok_Pure }
-"question" { Tok_Question }
+"?" { Tok_Question }
 "rand" { Tok_Rand }
 "randc" { Tok_Randc }
 "randcase" { Tok_Randcase }
@@ -297,7 +297,7 @@ import Language.SystemVerilog.Tokens
 "tftimeskew" { Tok_Tftimeskew }
 "this" { Tok_This }
 "throughout" { Tok_Throughout }
-"tilde" { Tok_Tilde }
+"~" { Tok_Tilde }
 "time" { Tok_Time }
 "timeprecision" { Tok_Timeprecision }
 "timeunit" { Tok_Timeunit }
@@ -451,6 +451,14 @@ ParameterPortDeclaration :: { ParameterPortDeclaration }
 
 ListOfPorts :: { [Port] }
 : "(" sepBy1(Port, ",") ")" { $2 }
+
+
+Port :: { Port }
+: second(".", PortIdentifier) "(" opt(PortExpression) ")"
+  { Port (Just $1) $3 }
+| opt(PortExpression)
+  { Port Nothing $1 }
+
 
 
 -- | A.2 Declarations
@@ -615,11 +623,116 @@ ListOfVariableDeclAssignments :: { ListOfVariableDeclAssignments }
 : sepBy1(VariableDeclAssignment, ",") { $1 }
 
 
+-- | A.2.4 Declaration assignments
+--
+
+ParamAssignment :: { ParamAssignment }
+: ParameterIdentifier many(UnpackedDimension) opt(second("=", ConstantParamExpression))
+  { ParamAssignment $1 $2 $3 }
+
+
+TypeAssignment :: { TypeAssignment }
+: TypeIdentifier opt(second("=", DataType))
+  { TypeAssignment $1 $2 }
+
+
+VariableDeclAssignment :: { VariableDeclAssignment }
+: VariableIdentifier many(VariableDimension) opt(second("=", Expression))
+  { VariableDeclAssignment $1 $2 $3 }
+| DynamicArrayVariableIdentifier UnsizedDimension many(VariableDimension) opt(second("=", DynamicArrayNew))
+  { DynamicArrayVariableIdentifier_VariableDeclAssignment $1 $2 $3 $4 }
+| ClassVariableIdentifier opt(second("=", ClassNew))
+  { ClassVariableIdentifier_VariableDeclAssignment $1 $2 }
+
+
+DynamicArrayNew :: { DynamicArrayNew }
+: "new" "[" Expression "]" opt(between("(", ")", Expression))
+  { DynamicArrayNew $3 $5 }
+
 
 -- | A.8.3 Expressions
 --
 
+ConstantExpression :: { ConstantExpression }
+: ConstantPrimary { ConstantPrimary_ConstantExpression $1 }
+| UnaryOperator many(AttributeInstance) ConstantPrimary
+  { UnaryConstantExpression $1 $2 $3 }
+| ConstantExpression BinaryOperator many(AttributeInstance) ConstantExpression
+  { BinaryConstantExpression $1 $2 $3 $4 }
+| ConstantExpression "?" many(AttributeInstance) ConstantExpression ":" ConstantExpression
+  { TernaryConstantExpression $1 $3 $4 $5 }
 
+
+ConstantParamExpression :: { ConstantParamExpression }
+: ConstantMintypmaxExpression { ConstantMintypmaxExpression_ConstantParamExpression $1 }
+| DataType { DataType_ConstantParamExpression $1 }
+| "$" { DollarConstantParamExpression }
+
+
+Expression :: { Expression }
+: Primary { Primary_Expression $1 }
+| UnaryOperator many(AttributeInstance) Primary { UnaryExpression $1 $2 $3 }
+| IncOrDecExpression { IncOrDecExpression_Expression $1 }
+| "(" OperatorAssignment ")" { OperatorAssignment_Expression $2 }
+| Expression BinaryOperator many(AttributeInstance) Expression { BinaryExpression $1 $2 $3 $4 }
+| ConditionalExpression { ConditionalExpression_Expression $1 }
+| InsideExpression { InsideExpression_Expression $1 }
+| TaggedUnionExpression { TaggedUnionExpression_Expression $1 }
+
+
+-- | A.8.4 Primaries
+--
+
+Primary :: { Primary }
+: PrimaryLiteral { PrimaryLiteral_Primary $1 }
+| opt(either(ClassQualifier, PackageScope)) HierarchicalIdentifier Select
+  { HierarchicalIdentifier_Primary $1 $2 $3 }
+| EmptyQueue { EmptyPrimary }
+| Concatenation opt(between("[", "]", RangeExpression))
+  { Concatenation_Primary $1 $2 }
+| MultipleConcatenation opt(between("[", "]", RangeExpression))
+  { MultipleConcatenation_Primary $1 $2 }
+| FunctionSubroutineCall { FunctionSubroutineCall_Primary $1 }
+| LetExpression { LetExpression_Primary $1 }
+| "(" MintypmaxExpression ")" { MintypmaxExpression_Primary $2 }
+| Cast { Cast_Primary $1 }
+| AssignmentPatternExpression { AssignmentPatternExpression_Primary $1 }
+| StreamingConcatenation { StreamingConcatenation_Primary $1 }
+| SequenceMethodCall { SequenceMethodCall_Primary $1 }
+| "this" { ThisPrimary }
+| "$" { DollarPrimary }
+| "null" { NullPrimary }
+
+
+
+-- | A.8.6 Operators
+--
+
+UnaryOperator :: { UnaryOperator }
+: "!" { NotUn }
+| "~" "&" { TildeAmpUn }
+| "~" "|" { TildePipeUn }
+| "^" "~" { CaretTildeUn }
+| "~" "^" { TildeCaretUn }
+| "&" { AmpUn }
+| "|" { PipeUn }
+| "~" { TildeUn }
+| "^" { TildeCaret }
+
+
+-- | A.8.7 Numbers
+--
+
+Number :: { Number }
+: IntegralNumber { IntegralNumber_Number $1 }
+| RealNumber { RealNumber_Number $1 }
+
+
+IntegralNumber :: { IntegralNumber }
+: DecimalNumber { DecimalNumber_IntegralNumber $1 }
+| OctalNumber { OctalNumber_IntegralNumber $1 }
+| BinaryNumber { BinaryNumber_IntegralNumber $1 }
+| HexNumber { HexNumber_IntegralNumber $1 }
 
 
 
@@ -647,6 +760,9 @@ LibraryIdentifier :: { LibraryIdentifier }
 : Identifier { $1 }
 
 ModuleIdentifier :: { LibraryIdentifier }
+: Identifier { $1 }
+
+ClassIdentifier :: { ClassIdentifier }
 : Identifier { $1 }
 
 EnumIdentifier :: { EnumIdentifier }

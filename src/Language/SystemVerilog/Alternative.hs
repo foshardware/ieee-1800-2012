@@ -4937,7 +4937,7 @@ constantExpression
       <*> binaryOperator
       <*> many attributeInstance
       <*> constantExpression
-  <|> TertiaryConstantExpression
+  <|> TernaryConstantExpression
       <$> constantExpression
       <*> (question *> many attributeInstance)
       <*> constantExpression
