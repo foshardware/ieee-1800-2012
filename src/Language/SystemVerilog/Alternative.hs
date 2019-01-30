@@ -4937,7 +4937,7 @@ constantExpression
       <*> binaryOperator
       <*> many attributeInstance
       <*> constantExpression
-  <|> TertiaryConstantExpression
+  <|> TernaryConstantExpression
       <$> constantExpression
       <*> (question *> many attributeInstance)
       <*> constantExpression
@@ -5644,7 +5644,7 @@ netTypeIdentifier = identifier <?> "net_type_identifier"
 outputPortIdentifier :: Parser OutputPortIdentifier
 outputPortIdentifier = identifier <?> "output_port_identifier"
 
-packageIdentifier :: Parser OutputPortIdentifier
+packageIdentifier :: Parser PackageIdentifier
 packageIdentifier = identifier <?> "package_identifier"
 
 packageScope :: Parser PackageScope

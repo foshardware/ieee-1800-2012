@@ -2771,7 +2771,7 @@ data ConstantExpression
   = ConstantPrimary_ConstantExpression ConstantPrimary
   | UnaryConstantExpression UnaryOperator [AttributeInstance] ConstantPrimary
   | BinaryConstantExpression ConstantExpression BinaryOperator [AttributeInstance] ConstantExpression
-  | TertiaryConstantExpression ConstantExpression
+  | TernaryConstantExpression ConstantExpression
     [AttributeInstance] ConstantExpression
     ConstantExpression
   deriving (Eq, Show)

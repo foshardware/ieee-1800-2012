@@ -1,6 +1,6 @@
 
 name:                ieee18002012
-version:             0.1.1.0
+version:             0.1.2.0
 synopsis:            IEEE 1800-2012 SystemVerilog
 -- description:         
 license:             BSD3
@@ -13,33 +13,25 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:    
-    Language.SystemVerilog.Alternative
+  exposed-modules:
     Language.SystemVerilog.Lexer 
     Language.SystemVerilog.Parser
-    Language.SystemVerilog.Alternative.Identity
+    Language.SystemVerilog.Alternative
     Language.SystemVerilog.Alternative.Grammar
-    Language.SystemVerilog.Alternative.Writer
     Language.SystemVerilog.Syntax 
     Language.SystemVerilog.Tokens 
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.2, array, text, parsec, transformers, containers
+  build-depends:       base >=4.2
+                     , array
+                     , text
+                     , parsec
+                     , lens
+                     , transformers
+                     , containers
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall -O2
-
-test-suite ieee18002012-generate-happy
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  other-modules:
-      Paths_ieee18002012
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-    base >=4.2, ieee18002012, array, text, parsec, transformers, containers
-  default-language: Haskell2010
 
 test-suite ieee18002012-test
   type: exitcode-stdio-1.0
@@ -49,6 +41,14 @@ test-suite ieee18002012-test
   hs-source-dirs:
       test
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-    base >=4.2, ieee18002012, array, text, parsec, transformers, containers
+  build-depends:       base >=4.2
+                     , ieee18002012
+                     , array
+                     , file-embed
+                     , text
+                     , parsec
+                     , transformers
+                     , containers
+                     , tasty
+                     , tasty-hunit
   default-language: Haskell2010
