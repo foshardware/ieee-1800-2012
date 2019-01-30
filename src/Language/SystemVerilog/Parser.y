@@ -1,12 +1,13 @@
 {
+
 module Language.SystemVerilog.Parser where
 
-import Data.Bits
-import Data.List
-import qualified Data.Text as T
+import Control.Lens
+import Data.Text (Text)
 
 import Language.SystemVerilog.Syntax
 import Language.SystemVerilog.Tokens
+
 }
 
 %name ast
@@ -421,7 +422,7 @@ ModuleNonAnsiHeader :: { ModuleNonAnsiHeader }
 ModuleAnsiHeader :: { ModuleAnsiHeader }
 : many(AttributeInstance) ModuleKeyword opt(Lifetime) ModuleIdentifier
   many(PackageImportDeclaration) opt(ParameterPortList) opt(ListOfPortDeclarations) ";"
-  { ModuleNonAnsiHeader $1 $2 $3 $4 $5 $6 $7 }
+  { ModuleAnsiHeader $1 $2 $3 $4 $5 $6 $7 }
 
 
 ModuleDeclaration :: { ModuleDeclaration }
@@ -438,14 +439,14 @@ ModuleDeclaration :: { ModuleDeclaration }
   opt(second(":", ModuleIdentifier))
   { ModuleAnsiHeader_ModuleDeclaration $1 $2 $3 $5 }
 | many(AttributeInstance)
-  ModuleKeyword opt(Lifetime) "(" "." "*" ")" ";"
+  ModuleKeyword opt(Lifetime) ModuleIdentifier "(" "." "*" ")" ";"
   opt(TimeunitsDeclaration)
   many(ModuleItem)
   "endmodule"
   opt(second(":", ModuleIdentifier))
-  { ModuleDeclaration $1 $2 $3 $4 $9 $10 $12 }
-| "extern" ModuleNonAnsiHeader { ExternModuleNonAnsiHeader_ModuleDeclaration }
-| "extern" ModuleAnsiHeader { ExternModuleAnsiHeader_ModuleDeclaration }
+  { ModuleDeclaration $1 $2 $3 $4 $10 $11 $13 }
+| "extern" ModuleNonAnsiHeader { ExternModuleNonAnsiHeader_ModuleDeclaration $2 }
+| "extern" ModuleAnsiHeader { ExternModuleAnsiHeader_ModuleDeclaration $2 }
 
 
 ModuleKeyword :: { ModuleKeyword }
@@ -454,10 +455,10 @@ ModuleKeyword :: { ModuleKeyword }
 
 
 TimeunitsDeclaration :: { TimeunitsDeclaration }
-: "timeunit" TimeLiteral opt(between("/", ";", TimeLiteral))
+: "timeunit" TimeLiteral opt(second("/", TimeLiteral)) ";"
   { TimeunitsDeclaration (Just $2) $3 }
 | "timeprecision" TimeLiteral ";"
-  { TimeunitsDeclaration Nothing $2 }
+  { TimeunitsDeclaration Nothing (Just $2) }
 | "timeunit" TimeLiteral ";"
   "timeprecision" TimeLiteral ";"
   { TimeunitsDeclaration (Just $2) (Just $5) }
@@ -476,7 +477,7 @@ ParameterPortList :: { ParameterPortList }
 ParameterPortDeclaration :: { ParameterPortDeclaration }
 : ParameterDeclaration { ParameterDeclaration_ParameterPortDeclaration $1 }
 | LocalParameterDeclaration { LocalParameterDeclaration_ParameterPortDeclaration $1 }
-| DataType ListOfParamAssignments { DataType_ParameterPortDeclaration $1 }
+| DataType ListOfParamAssignments { DataType_ParameterPortDeclaration $1 $2 }
 | "type" ListOfTypeAssignments { TypeAssignments_ParameterPortDeclaration $2 }
 
 
@@ -529,7 +530,7 @@ InterfacePortHeader :: { InterfacePortHeader }
 : "interface" opt(second(".", ModportIdentifier))
   { InterfacePortHeader Nothing $2 }
 | InterfaceIdentifier opt(second(".", ModportIdentifier))
-  { InterfacePortHeader $1 $2 }
+  { InterfacePortHeader (pure $1) $2 }
 
 
 AnsiPortDeclaration :: { AnsiPortDeclaration }
@@ -537,7 +538,7 @@ AnsiPortDeclaration :: { AnsiPortDeclaration }
   { NetPortHeader_AnsiPortDeclaration $1 $2 $3 $4 }
 | opt(InterfacePortHeader) PortIdentifier many(UnpackedDimension) opt(second("=", ConstantExpression))
   { InterfacePortHeader_AnsiPortDeclaration $1 $2 $3 $4 }
-| opt(VariablePortHeader) PortIdentifier many(UnpackedDimension) opt(second("=", ConstantExpression))
+| opt(VariablePortHeader) PortIdentifier many(VariableDimension) opt(second("=", ConstantExpression))
   { VariablePortHeader_AnsiPortDeclaration $1 $2 $3 $4 }
 | opt(PortDirection) "." PortIdentifier "(" opt(Expression) ")"
   { AnsiPortDeclaration $1 $3 $5 }
@@ -606,8 +607,8 @@ InoutDeclaration :: { InoutDeclaration }
 InputDeclaration :: { InputDeclaration }
 : "input" either(NetPortType, VariablePortType) ListOfPortIdentifiers { InputDeclaration $2 $3 }
 
-OutputDeclaration :: { InputDeclaration }
-: "input" either(NetPortType, VariablePortType) ListOfPortIdentifiers { OutputDeclaration $2 $3 }
+OutputDeclaration :: { OutputDeclaration }
+: "output" either(NetPortType, VariablePortType) ListOfPortIdentifiers { OutputDeclaration $2 $3 }
 
 
 -- | A.2.1.3  Type declarations
@@ -1065,7 +1066,7 @@ MultipleConcatenation :: { MultipleConcatenation }
 
 StreamingConcatenation :: { StreamingConcatenation }
 : "{" StreamOperator opt(SliceSize) StreamConcatenation "}"
-  { StreamConcatenation $2 $3 $4 }
+  { StreamingConcatenation $2 $3 $4 }
 
 
 StreamOperator :: { StreamOperator }
@@ -1087,8 +1088,8 @@ StreamExpression :: { StreamExpression }
 
 ArrayRangeExpression :: { ArrayRangeExpression }
 : Expression ":" Expression { ArrayRangeZ $1 $3 }
-| Expression "+" ":" Expression { ArrayRangeP $1 $3 }
-| Expression "-" ":" Expression { ArrayRangeM $1 $3 }
+| Expression "+" ":" Expression { ArrayRangeP $1 $4 }
+| Expression "-" ":" Expression { ArrayRangeM $1 $4 }
 | Expression { Expression_ArrayRangeExpression $1 }
 
 
@@ -1133,7 +1134,7 @@ ConstantExpression :: { ConstantExpression }
 | ConstantExpression BinaryOperator many(AttributeInstance) ConstantExpression
   { BinaryConstantExpression $1 $2 $3 $4 }
 | ConstantExpression "?" many(AttributeInstance) ConstantExpression ":" ConstantExpression
-  { TernaryConstantExpression $1 $3 $4 $5 }
+  { TernaryConstantExpression $1 $3 $4 $6 }
 
 
 ConstantMintypmaxExpression :: { ConstantMintypmaxExpression }
@@ -1228,8 +1229,8 @@ ConstantPrimary :: { ConstantPrimary }
 | ConstantMultipleConcatenation opt(between("[", "]", ConstantRangeExpression)) { ConstantMultipleConcatenation_ConstantPrimary $1 $2 }
 -- | ConstantFunctionCall { ConstantFunctionCall_ConstantPrimary $1 }
 | ConstantLetExpression { ConstantLetExpression_ConstantPrimary $1 }
-| "(" ConstantMintypmaxExpression ")" { ConstantMintypmaxExpression_ConstantPrimary $1 }
-| ConstantCast { ConstantCast_ConstantPrimary }
+| "(" ConstantMintypmaxExpression ")" { ConstantMintypmaxExpression_ConstantPrimary $2 }
+| ConstantCast { ConstantCast_ConstantPrimary $1 }
 | ConstantAssignmentPatternExpression { ConstantAssignmentPatternExpression_ConstantPrimary $1 }
 | TypeReference { TypeReference_ConstantPrimary $1 }
 
@@ -1269,7 +1270,7 @@ RangeExpression :: { RangeExpression }
 PrimaryLiteral :: { PrimaryLiteral }
 : Number { Number_PrimaryLiteral $1 }
 | TimeLiteral { TimeLiteral_PrimaryLiteral $1 }
-| UnbasedUnsizedLiteral { UnbasedUnsizedLiteral $1 }
+| UnbasedUnsizedLiteral { UnbasedUnsizedLiteral_PrimaryLiteral $1 }
 | StringLiteral { StringLiteral_PrimaryLiteral $1 }
 
 
@@ -1330,7 +1331,7 @@ VariableLvalue :: { VariableLvalue }
   { VariableLvalues_VariableLvalue $2 }
 | opt(AssignmentPatternExpressionType) AssignmentPatternVariableLvalue
   { AssignmentPatternVariableLvalue_VariableLvalue $1 $2 }
-| StreamingConcatenation { StreamingConcatenation_VariableLvalue }
+| StreamingConcatenation { StreamingConcatenation_VariableLvalue $1 }
 
 
 -- | A.8.6 Operators
@@ -1345,7 +1346,7 @@ UnaryOperator :: { UnaryOperator }
 | "&" { AmpUn }
 | "|" { PipeUn }
 | "~" { TildeUn }
-| "^" { TildeCaret }
+| "^" { TildeCaretUn }
 
 
 BinaryOperator :: { BinaryOperator }
@@ -1390,8 +1391,8 @@ IntegralNumber :: { IntegralNumber }
 DecimalNumber :: { DecimalNumber }
 : UnsignedNumber { UnsignedNumber_DecimalNumber Nothing $1 }
 | opt(Size) DecimalBase UnsignedNumber { UnsignedNumber_DecimalNumber $1 $3 }
-| opt(Size) DecimalBase xdigit { X_DecimalNumber $1 $3 }
-| opt(Size) DecimalBase zdigit { Z_DecimalNumber $1 $3 }
+| opt(Size) DecimalBase xdigit { X_DecimalNumber $1 (content $3) }
+| opt(Size) DecimalBase zdigit { Z_DecimalNumber $1 (content $3) }
 
 BinaryNumber :: { BinaryNumber }
 : opt(Size) BinaryBase BinaryValue { BinaryNumber $1 $3 }
@@ -1422,40 +1423,40 @@ Size :: { Size }
 : UnsignedNumber { $1 }
 
 UnbasedUnsizedLiteral :: { UnbasedUnsizedLiteral }
-: "'" UnsignedNumber { $2 }
+: "'" UnsignedNumber { UnbasedUnsizedLiteral $2 }
 
 
 UnsignedNumber :: { UnsignedNumber }
-: unsignedNumber { fromUnsignedNumber($1) }
+: unsignedNumber { content $1 }
 
 BinaryValue :: { BinaryValue }
-: binaryValue { fromBinaryValue($1) }
+: binaryValue { content $1 }
 
 OctalValue :: { OctalValue }
-: octalValue { fromOctalValue($1) }
+: octalValue { content $1 }
 
 HexValue :: { HexValue }
-: hexValue { fromHexValue($1) }
+: hexValue { content $1 }
 
 
 DecimalBase :: { DecimalBase }
-: decimalBase { $1 }
+: decimalBase { content $1 }
 
 BinaryBase :: { BinaryBase }
-: binaryBase { $1 }
+: binaryBase { content $1 }
 
 OctalBase :: { OctalBase }
-: octalBase { $1 }
+: octalBase { content $1 }
 
 HexBase :: { HexBase }
-: hexBase { $1 }
+: hexBase { content $1 }
 
 
 -- | A.8.8 Strings
 --
 
 StringLiteral :: { StringLiteral }
-: stringLit { stringLiteral $1 }
+: stringLit { content $1 }
 
 
 
@@ -1465,7 +1466,7 @@ StringLiteral :: { StringLiteral }
 --
 
 AttributeInstance :: { AttributeInstance }
-: "(" "*" sepBy1(AttrSpec, ",") "*" ")" { AttributeInstance $3 }
+: "(" "*" sepBy1(AttrSpec, ",") "*" ")" { $3 }
 
 
 AttrSpec :: { AttrSpec }
@@ -1575,8 +1576,8 @@ PsParameterIdentifier :: { PsParameterIdentifier }
 
 PsTypeIdentifier :: { PsTypeIdentifier }
 : "local" "::" TypeIdentifier { PsTypeIdentifier (Just Nothing) $3 }
-| PackageScope TypeIdentifier { PsTypeIdentifier (Just $1) $2 }
-| TypeIdentifier { PsTypeIdentifier Nothing }
+| PackageScope TypeIdentifier { PsTypeIdentifier (Just (Just $1)) $2 }
+| TypeIdentifier { PsTypeIdentifier Nothing $1 }
 
 
 
@@ -1586,7 +1587,7 @@ FilePathSpec :: { FilePathSpec }
 
 
 Identifier :: { Identifier }
-: ident { identifier $1 }
+: ident { content $1 }
 
 
 
@@ -1635,17 +1636,12 @@ third(a, b, p)
 
 {
 
-identifier :: Lexer Token -> Identifier
-identifier (L _ (Tok_Ident s)) = s
-identifier _ = mempty
-
-stringLiteral :: Lexer Token -> Identifier
-stringLiteral (L _ (Tok_StringLit s)) = s
-stringLiteral _ = mempty
-
+content :: Lexer Token -> Text
+content (L _ t) = t ^. parsed
 
 parseError :: [Lexer Token] -> a
 parseError a = case a of
   [] -> error "Parse error: no tokens left to parse."
   L (l, c) t : _ -> error $ unwords ["Parse error:", "line", show l, "column", show c, "token", show t]
+
 }

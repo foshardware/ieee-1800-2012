@@ -1,10 +1,10 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
 
-module Language.SystemVerilog.Tokens
-    ( Lexer (..)
-    , Pos
-    , Token (..)
-    ) where
+module Language.SystemVerilog.Tokens where
 
+import Control.Lens
 import Data.Text (Text)
 
 data Lexer a = L Pos a
@@ -345,8 +345,8 @@ data Token
     | Tok_Dwne
 
     -- Identifiers
-    | Tok_Ident Text
-    | Tok_TaskFunction Text
+    | Tok_Ident { _parsed :: Text }
+    | Tok_TaskFunction  { _parsed :: Text }
 
     | Tok_Tfsetup
     | Tok_Tfsetuphold
@@ -361,22 +361,22 @@ data Token
     | Tok_Tfnochange
 
     -- Literals
-    | Tok_StringLit Text
+    | Tok_StringLit  { _parsed :: Text }
 
-    | Tok_UnsignedNumber Text
-    | Tok_BinaryValue Text
-    | Tok_OctalValue Text
-    | Tok_HexValue Text
+    | Tok_UnsignedNumber  { _parsed :: Text }
+    | Tok_BinaryValue  { _parsed :: Text }
+    | Tok_OctalValue  { _parsed :: Text }
+    | Tok_HexValue  { _parsed :: Text }
     
-    | Tok_DecimalBase Text
-    | Tok_BinaryBase Text
-    | Tok_OctalBase Text
-    | Tok_HexBase Text
+    | Tok_DecimalBase  { _parsed :: Text }
+    | Tok_BinaryBase  { _parsed :: Text }
+    | Tok_OctalBase  { _parsed :: Text }
+    | Tok_HexBase  { _parsed :: Text }
     
     | Tok_Exp
 
-    | Tok_XDigit Text
-    | Tok_ZDigit Text
+    | Tok_XDigit  { _parsed :: Text }
+    | Tok_ZDigit  { _parsed :: Text }
 
     -- Other symbols
     | Tok_Unitscope
@@ -384,3 +384,5 @@ data Token
     | Tok_Pathpulse
 
   deriving (Eq, Show)
+
+makeFieldsNoPrefix ''Token
