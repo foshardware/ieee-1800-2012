@@ -2,6 +2,8 @@
 
 module Main where
 
+import Control.Exception (evaluate)
+
 import Data.FileEmbed
 import Data.Text.Encoding
 
@@ -19,8 +21,8 @@ main = defaultMain $ testGroup "IEEE-1800-2012"
 
 ansi_header :: TestTree
 ansi_header = testGroup "ANSI Headers"
-  [ testCase "check" $ parse $ ast $ lexer [] $ decodeUtf8 $(embedFile "sample/ansi_header.v")
+  [ testCase "ansi_header.v" $ parse $ ast $ lexer [] $ decodeUtf8 $(embedFile "sample/ansi_header.v")
   ]
 
 parse :: Show a => a -> IO ()
-parse _ = pure ()
+parse s = () <$ evaluate s
