@@ -1,4 +1,5 @@
 {
+{-# OPTIONS_GHC -O0 #-}
 
 module Language.SystemVerilog.Parser where
 
