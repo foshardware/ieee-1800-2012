@@ -439,13 +439,6 @@ ModuleDeclaration :: { ModuleDeclaration }
   "endmodule"
   opt(second(":", ModuleIdentifier))
   { ModuleAnsiHeader_ModuleDeclaration $1 $2 $3 $5 }
-| many(AttributeInstance)
-  ModuleKeyword opt(Lifetime) ModuleIdentifier "(" "." "*" ")" ";"
-  opt(TimeunitsDeclaration)
-  many(ModuleItem)
-  "endmodule"
-  opt(second(":", ModuleIdentifier))
-  { ModuleDeclaration $1 $2 $3 $4 $10 $11 $13 }
 | "extern" ModuleNonAnsiHeader { ExternModuleNonAnsiHeader_ModuleDeclaration $2 }
 | "extern" ModuleAnsiHeader { ExternModuleAnsiHeader_ModuleDeclaration $2 }
 
@@ -1602,19 +1595,18 @@ between(a, b, p)
 : a p b { $2 }
 
 sepBy(p, s)
-: sepBy1(p, s) s p { $3 : $1 }
+: sepBy1(p, s) { $1 }
 | { [] }
 
 sepBy1(p, s)
-: sepBy1(p, s) s p { $3 : $1 }
+: p s sepBy1(p, s) { $1 : $3 }
 | p { [$1] }
 
 many1(p)
-: many(p) p { $2 : $1 }
-| p { [$1] }
+: p many(p) { $1 : $2 }
 
 many(p)
-: many(p) p { $2 : $1 }
+: p many(p) { $1 : $2 }
 | { [] }
 
 opt(p)
