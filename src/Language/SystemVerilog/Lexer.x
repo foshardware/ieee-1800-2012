@@ -332,7 +332,7 @@ randomize     { constTok Tok_Randomize     }
 \^     { constTok Tok_Caret      }
 \!     { constTok Tok_Notop      }
 \~     { constTok Tok_Tilde      }
-\=     { constTok Tok_Assign     }
+\=     { constTok Tok_Assignop   }
 \@     { constTok Tok_At         }
 \#     { constTok Tok_Hash       }
 \?     { constTok Tok_Question   }

@@ -10,7 +10,7 @@ import Language.SystemVerilog.Tokens
 }
 
 %name ast
-%tokentype { Token }
+%tokentype { Lexer Token }
 %error { parseError }
 
 %token
@@ -29,7 +29,7 @@ binaryBase { Tok_BinaryBase _ }
 octalBase { Tok_OctalBase _ }
 hexBase { Tok_HexBase _ }
 
-stringLit { Tok_StrinLit _ }
+stringLit { Tok_StringLit _ }
 
 
 "1step" { Tok_1step }
@@ -44,20 +44,21 @@ stringLit { Tok_StrinLit _ }
 "&&" { Tok_Andop }
 "'" { Tok_Apos }
 "arrow" { Tok_Arrow }
-"asscaret" { Tok_Asscaret }
+"^=" { Tok_Asscaret }
 "assert" { Tok_Assert }
 "assign" { Tok_Assign }
 "=" { Tok_Assignop }
-"assminus" { Tok_Assminus }
-"asspercent" { Tok_Asspercent }
-"asspipe" { Tok_Asspipe }
-"assplus" { Tok_Assplus }
-"assshiftl" { Tok_Assshiftl }
-"assshiftll" { Tok_Assshiftll }
-"assshiftr" { Tok_Assshiftr }
-"assshiftrr" { Tok_Assshiftrr }
-"assslash" { Tok_Assslash }
-"ass*" { Tok_Ass* }
+"-=" { Tok_Assminus }
+"%=" { Tok_Asspercent }
+"|=" { Tok_Asspipe }
+"&=" { Tok_Assamp }
+"+=" { Tok_Assplus }
+"<<=" { Tok_Assshiftl }
+"<<<=" { Tok_Assshiftll }
+">>=" { Tok_Assshiftr }
+">>>=" { Tok_Assshiftrr }
+"/=" { Tok_Assslash }
+"*=" { Tok_Assstar }
 "assume" { Tok_Assume }
 "at" { Tok_At }
 "automatic" { Tok_Automatic }
@@ -102,10 +103,10 @@ stringLit { Tok_StrinLit _ }
 "do" { Tok_Do }
 "$" { Tok_Dollar }
 "." { Tok_Dot }
-"doublearrow" { Tok_Doublearrow }
-"doubleat" { Tok_Doubleat }
-"doublehash" { Tok_Doublehash }
-"double*" { Tok_Double* }
+"->>" { Tok_Doublearrow }
+"@@" { Tok_Doubleat }
+"##" { Tok_Doublehash }
+"**" { Tok_Doublestar }
 "dweq" { Tok_Dweq }
 "dwne" { Tok_Dwne }
 "edge" { Tok_Edge }
@@ -488,6 +489,14 @@ ListOfPortDeclarations :: { ListOfPortDeclarations }
   { $2 }
 
 
+PortDeclaration :: { PortDeclaration }
+: many(AttributeInstance) InoutDeclaration { InoutDeclaration_PortDeclaration $1 $2 }
+| many(AttributeInstance) InputDeclaration { InputDeclaration_PortDeclaration $1 $2 }
+| many(AttributeInstance) OutputDeclaration { OutputDeclaration_PortDeclaration $1 $2 }
+-- | many(AttributeInstance) RefDeclaration { RefDeclaration_PortDeclaration $1 $2 }
+-- | many(AttributeInstance) InterfacePortDeclaration { InterfacePortDeclaration_PortDeclaration $1 $2 }
+
+
 Port :: { Port }
 : second(".", PortIdentifier) "(" opt(PortExpression) ")"
   { Port (Just $1) $3 }
@@ -543,12 +552,12 @@ ModuleItem :: { ModuleItem }
 
 
 NonPortModuleItem :: { NonPortModuleItem }
-: GenerateRegion { GenerateRegion_NonPortModuleItem $1 }
-| ModuleOrGenerateItem { ModuleOrGenerateItem_NonPortModuleItem $1 }
-| SpecifyBlock { SpecifyBlock_NonPortModuleItem $1 }
+-- : GenerateRegion { GenerateRegion_NonPortModuleItem $1 }
+-- | ModuleOrGenerateItem { ModuleOrGenerateItem_NonPortModuleItem $1 }
+-- | SpecifyBlock { SpecifyBlock_NonPortModuleItem $1 }
 -- | SpecparamDeclaration { SpecparamDeclaration_NonPortModuleItem $1 }
 -- | ProgramDeclaration { ProgramDeclaration_NonPortModuleItem $1 }
-| ModuleDeclaration { ModuleDeclaration_NonPortModuleItem $1 }
+: ModuleDeclaration { ModuleDeclaration_NonPortModuleItem $1 }
 -- | InterfaceDeclaration { InterfaceDeclaration_NonPortModuleItem $1 }
 | TimeunitsDeclaration { TimeunitsDeclaration_NonPortModuleItem $1 }
 
@@ -587,6 +596,18 @@ Lifetime :: { Lifetime }
 : "static" { StaticLifetime }
 | "automatic" { AutomaticLifetime }
 
+
+-- | A.2.1.2 Port declarations
+--
+
+InoutDeclaration :: { InoutDeclaration }
+: "inout" NetPortType ListOfPortIdentifiers { InoutDeclaration $2 $3 }
+
+InputDeclaration :: { InputDeclaration }
+: "input" either(NetPortType, VariablePortType) ListOfPortIdentifiers { InputDeclaration $2 $3 }
+
+OutputDeclaration :: { InputDeclaration }
+: "input" either(NetPortType, VariablePortType) ListOfPortIdentifiers { OutputDeclaration $2 $3 }
 
 
 -- | A.2.1.3  Type declarations
@@ -637,7 +658,7 @@ DataType :: { DataType }
   InterfaceIdentifier
   opt(ParameterValueAssignment)
   opt(ModportIdentifier)
-  { Interface_DataType $2 $3 $4 $5 }
+  { Interface_DataType (() <$ $2) $3 $4 $5 }
 | opt(either(ClassScope, PackageScope))
   TypeIdentifier
   many(PackedDimension)
@@ -707,6 +728,35 @@ NonIntegerType :: { NonIntegerType }
 | "realtime"  { TRealtime  }
 
 
+NetType :: { NetType }
+: "supply0" { TSupply0 }
+| "supply1" { TSupply1 }
+| "tri"     { Tri }
+| "triand"  { Triand }
+| "trior"   { Trior }
+| "trireg"  { Trireg }
+| "tri0"    { Tri0 }
+| "tri1"    { Tri1 }
+| "uwire"   { Uwire }
+| "wire"    { Wire }
+| "wand"    { Wand }
+| "wor"     { Wor }
+
+
+NetPortType :: { NetPortType }
+: opt(NetType) DataTypeOrImplicit { DataTypeOrImplicit_NetPortType $1 $2 }
+| NetTypeIdentifier { NetType_NetPortType $1 }
+| "interconnect" ImplicitDataType { ImplicitDataType_NetPortType $2 }
+
+
+VariablePortType :: { VariablePortType }
+: VarDataType { $1 }
+
+
+VarDataType :: { VarDataType }
+: DataType { DataType_VarDataType $1 }
+| "var" DataTypeOrImplicit { DataTypeOrImplicit_VarDataType $2 }
+
 
 Signing :: { Signing }
 : "signed"   { Signed   }
@@ -736,7 +786,7 @@ DataTypeOrVoid :: { DataTypeOrVoid }
 
 StructUnion :: { StructUnion }
 : "struct"               { TStruct }
-| "union" opt("tagged")  { TUnion  }
+| "union" opt("tagged")  { TUnion (() <$ $2) }
 
 
 TypeReference :: { TypeReference }
@@ -750,6 +800,9 @@ TypeReference :: { TypeReference }
 
 ListOfParamAssignments :: { ListOfParamAssignments }
 : sepBy1(ParamAssignment, ",") { $1 }
+
+ListOfPortIdentifiers :: { ListOfPortIdentifiers }
+: sepBy1(tuple(PortIdentifier, many(UnpackedDimension)), ",") { $1 }
 
 ListOfTypeAssignments :: { ListOfTypeAssignments }
 : sepBy1(TypeAssignment, ",") { $1 }
@@ -817,14 +870,16 @@ VariableDimension :: { VariableDimension }
 QueueDimension :: { QueueDimension }
 : "[" "$" opt(second(":", ConstantExpression)) "]" { $3 }
 
+UnsizedDimension :: { UnsizedDimension }
+: "[" "]" { () }
 
 
 -- | A.2.10 Assertion declarations
 --
 
 
-SequenceMethodCall :: { SequenceMethodCall }
-: SequenceInstance "." MethodIdentifier { SequenceMethodCall $1 $3 }
+-- SequenceMethodCall :: { SequenceMethodCall }
+-- : SequenceInstance "." MethodIdentifier { SequenceMethodCall $1 $3 }
 
 
 LetExpression :: { LetExpression }
@@ -887,6 +942,19 @@ OperatorAssignment :: { OperatorAssignment }
   { OperatorAssignment $1 $2 $3 }
 
 
+AssignmentOperator :: { AssignmentOperator }
+: "="  { Ass }
+| "+=" { AssPlus }
+| "-=" { AssMinus }
+| "*=" { AssStar }
+| "%=" { AssPercent }
+| "&=" { AssAmp }
+| "|=" { AssPipe }
+| "^=" { AssCaret }
+| "<<=" { AssShiftL }
+| ">>=" { AssShiftR }
+| "<<<=" { AssShiftLL }
+| ">>>=" { AssShiftRR }
 
 
 -- | A.6.6 Conditional statements
@@ -910,13 +978,29 @@ CondPattern :: { CondPattern }
 -- | A.6.7.1 Patterns
 --
 
+
+-- | A.6.7.1 Patterns
+--
+
+Pattern :: { Pattern }
+: "." VariableIdentifier { VariableIdentifier_Pattern $2 }
+| "." "*" { WildcardPattern }
+| ConstantExpression { ConstantExpression_Pattern $1 }
+| "tagged" MemberIdentifier opt(Pattern)
+  { TaggedPattern $2 $3 }
+| "'" "{" sepBy1(Pattern, ",") "}"
+  { PatternList_Pattern $3 }
+| "'" "{" sepBy1(tuple(MemberIdentifier, second(":", Pattern)), ",")  "}"
+  { MemberList_Pattern $3 }
+
+
 AssignmentPattern :: { AssignmentPattern }
 : "'" "{" sepBy1(Expression, ",") "}"
   { ExpressionList_AssignmentPattern $3 }
 | "'" "{" sepBy1(tuple(StructurePatternKey, second(":", Expression)), ",") "}"
-  { ExpressionList_AssignmentPattern $3 }
+  { StructurePatternKeyList_AssignmentPattern $3 }
 | "'" "{" sepBy1(tuple(ArrayPatternKey, second(":", Expression)), ",") "}"
-  { ExpressionList_AssignmentPattern $3 }
+  { ArrayPatternKeyList_AssignmentPattern $3 }
 | "'" "{" ConstantExpression "{" sepBy1(Expression, ",") "}" "}"
   { ConstantExpression_AssignmentPattern $3 $5 }
 
@@ -952,7 +1036,7 @@ ConstantAssignmentPatternExpression :: { ConstantAssignmentPatternExpression }
 -- AssignmentPatternNetLvalue :: { AssignmentPatternNetLvalue }
 -- : "'" "[" sepBy1(NetLvalue, ",") "]" { $3 }
 
-AssignmentPatternVariableLvalue :: { AssignmentPatternNetLvalue }
+AssignmentPatternVariableLvalue :: { AssignmentPatternVariableLvalue }
 : "'" "[" sepBy1(VariableLvalue, ",") "]" { $3 }
 
 
@@ -962,8 +1046,7 @@ AssignmentPatternVariableLvalue :: { AssignmentPatternNetLvalue }
 --
 
 Concatenation :: { Concatenation }
-: "{" sepBy1(Expression, ",") "}"
-  { $2 }
+: "{" sepBy1(Expression, ",") "}" { $2 }
 
 
 ConstantConcatenation :: { ConstantConcatenation }
@@ -1070,7 +1153,7 @@ ParamExpression :: { ParamExpression }
 | "$" { DollarParamExpression }
 
 
-ConstantRangeExpression :: { ConstantRange }
+ConstantRangeExpression :: { ConstantRangeExpression }
 : ConstantExpression { Left $1 }
 | ConstantPartSelectRange { Right $1 }
 
@@ -1167,15 +1250,15 @@ Primary :: { Primary }
 | Cast { Cast_Primary $1 }
 | AssignmentPatternExpression { AssignmentPatternExpression_Primary $1 }
 | StreamingConcatenation { StreamingConcatenation_Primary $1 }
-| SequenceMethodCall { SequenceMethodCall_Primary $1 }
+-- | SequenceMethodCall { SequenceMethodCall_Primary $1 }
 | "this" { ThisPrimary }
 | "$" { DollarPrimary }
 | "null" { NullPrimary }
 
 
 ClassQualifier :: { ClassQualifier }
-: opt(second("local", "::")) opt(either(first(ImplicitDataType, "."), ClassScope))
-  { ClassQualifier $1 $2 }
+: opt(second("local", "::")) opt(either(first(ImplicitClassHandle, "."), ClassScope))
+  { ClassQualifier (() <$ $1) $2 }
 
 
 RangeExpression :: { RangeExpression }
@@ -1196,6 +1279,12 @@ TimeLiteral :: { TimeLiteral }
 
 TimeUnit :: { TimeUnit }
 : Identifier { $1 }
+
+
+ImplicitClassHandle :: { ImplicitClassHandle }
+: "this" "." "super"  { ThisSuper }
+| "super" { Super }
+| "this" { This }
 
 
 BitSelect :: { BitSelect }
@@ -1230,10 +1319,6 @@ Cast :: { Cast }
 : CastingType "'" "(" Expression ")"
   { Cast $1 $4 }
 
-
-
--- | A.8.5 Expression left-side values
---
 
 -- | A.8.5 Expression left-side values
 --
@@ -1321,7 +1406,7 @@ HexNumber :: { HexNumber }
 RealNumber :: { RealNumber }
 : FixedPointNumber { FixedPointNumber_RealNumber $1 }
 | UnsignedNumber opt(second(".", UnsignedNumber)) "exp" opt(Sign) UnsignedNumber
-  { UnsignedNumber_RealNumber $1 $2 $3 $4 }
+  { UnsignedNumber_RealNumber $1 $2 $4 $5 }
 
 
 FixedPointNumber :: { FixedPointNumber }
@@ -1439,6 +1524,9 @@ ParameterIdentifier :: { ParameterIdentifier }
 MethodIdentifier :: { MethodIdentifier }
 : Identifier { $1 }
 
+NetTypeIdentifier :: { NetTypeIdentifier }
+: Identifier { $1 }
+
 LetIdentifier :: { LetIdentifier }
 : Identifier { $1 }
 
@@ -1458,7 +1546,7 @@ GenerateBlockIdentifier :: { GenerateBlockIdentifier }
 HierarchicalIdentifier :: { HierarchicalIdentifier }
 : opt(second("$root", "."))
   sepBy(tuple(Identifier, ConstantBitSelect), ".") Identifier
-  { HierarchicalIdentifier $1 $2 $3 }
+  { HierarchicalIdentifier (() <$ $1) $2 $3 }
 
 HierarchicalVariableIdentifier :: { HierarchicalVariableIdentifier }
 : HierarchicalIdentifier { $1 }
@@ -1556,7 +1644,8 @@ stringLiteral (Tok_StringLit s) = s
 stringLiteral _ = mempty
 
 
-parseError :: [Token] -> a
+parseError :: [Lexer Token] -> a
 parseError a = case a of
-  []              -> error "Parse error: no tokens left to parse."
+  [] -> error "Parse error: no tokens left to parse."
+  L (l, c) t : _ -> error $ unwords ["Parse error:", "line", show l, "column", show c, "token", show t]
 }
